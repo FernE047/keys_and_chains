@@ -1,3 +1,3 @@
 # TODO
 
-- [ ] Find a finder
+- [X] Find a finder
