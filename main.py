@@ -87,6 +87,13 @@ class Chain:
         for n, vis in enumerate(vis_sort):
             print(f"    {n + 1}. `{vis}`")
 
+    def list_visualizations(self) -> str:
+        text = ""
+        vis_sort = sorted(self.visualizations)
+        for n, vis in enumerate(vis_sort):
+            text += f"    {n + 1}. `{vis}`\n"
+        return text
+
     def find_all_visualizations(self) -> None:
         if self.has_all_vis:
             return
@@ -114,10 +121,13 @@ class Chain:
             self.find_all_visualizations()
             return str(other) in self.visualizations
 
-    def __hash__(self) -> int:
+    def unique_str(self) -> str:
         self.find_all_visualizations()
         vis_sort = sorted(self.visualizations)
-        return hash(str(vis_sort[0]))
+        return str(vis_sort[0])
+
+    def __hash__(self) -> int:
+        return hash(self.unique_str())
 
     def add_key(self) -> "Chain":
         if self.category == "Key":
@@ -151,27 +161,31 @@ def convert_text_to_chain(text: str | list[str]) -> Chain:
 
 
 if __name__ == "__main__":
-    chain = Chain("Chain","[[[]]]")
-    chain.find_all_visualizations()
-    print("1. `[[[]]]`")
-    chain.print_visualizations()
-    print()
-    previous_chains = [Chain("Chain",vis) for vis in chain.visualizations]
-    for level in range(10):
-        print(f"## KEY {level+1}\n")
-        all_chains: set[Chain] = set()
-        for chain in previous_chains:
-            if chain.category == "Key":
-                continue
-            all_chains.add(chain.add_key())
-        previous_chains:list[Chain] = []
-        for n,chain in enumerate(all_chains):
-            print(f"{n+1}. `{chain}`")
+    initial_chains = ["[[[[]]]]", "[[],[],[]]"]
+    with open("output.md","w") as file:
+        previous_chains: list[Chain] = [] 
+        for n,chain_text in enumerate(initial_chains):
+            file.write(f"{n + 1}. `{chain_text}`\n")
+            chain = Chain("Chain",chain_text)
             chain.find_all_visualizations()
-            chain.print_visualizations()
-            for vis in chain.visualizations:
-                sub_chain = Chain("Chain", vis)
-                if sub_chain.category == "Key":
+            file.write(chain.list_visualizations() + "\n")
+            previous_chains.extend([Chain("Chain",vis) for vis in chain.visualizations])
+        for level in range(10):
+            file.write(f"## KEY {level+1}\n\n")
+            all_chains: set[Chain] = set()
+            for chain in previous_chains:
+                if chain.category == "Key":
                     continue
-                previous_chains.append(sub_chain)
-            print()
+                all_chains.add(chain.add_key())
+            previous_chains:list[Chain] = []
+            print(f"{level + 1} : {len(all_chains)}")
+            for n,chain in enumerate(all_chains):
+                file.write(f"{n+1}. `{chain.unique_str()}`\n")
+                chain.find_all_visualizations()
+                #file.write(chain.list_visualizations() + "\n")
+                for vis in chain.visualizations:
+                    sub_chain = Chain("Chain", vis)
+                    if sub_chain.category == "Key":
+                        continue
+                    previous_chains.append(sub_chain)
+            file.write("\n")
