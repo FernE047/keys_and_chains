@@ -110,7 +110,7 @@ class Chain:
                 stack.append(enter_chain)
         self.has_all_vis = True
 
-    def __eq__(self, other:object) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, Chain):
             raise NotImplementedError("only comparable with chains")
         if self.has_all_vis:
@@ -123,7 +123,7 @@ class Chain:
 
     def unique_str(self) -> str:
         self.find_all_visualizations()
-        vis_sort = sorted(self.visualizations)
+        vis_sort = sorted(self.visualizations, reverse=True)
         return str(vis_sort[0])
 
     def __hash__(self) -> int:
@@ -155,37 +155,50 @@ def convert_text_to_chain(text: str | list[str]) -> Chain:
         char = chars.pop(0)
         if char == ",":
             continue
-        if char in ["]",")"]:
+        if char in ["]", ")"]:
             return chain
     return chain
 
 
 if __name__ == "__main__":
-    initial_chains = ["[[[[]]]]", "[[],[],[]]"]
-    with open("output.md","w") as file:
-        previous_chains: list[Chain] = [] 
-        for n,chain_text in enumerate(initial_chains):
+    initial_chains = [
+        "[[[[[[]]]]]]",
+        "[[[[[],[]]]]]",
+        "[[[[],[],[]]]]",
+        "[[[],[],[],[]]]",
+        "[[[[]],[[]]]]",
+        "[[[],[[],[]]]]"
+    ]
+    with open("output.md", "w") as file:
+        previous_chains: list[Chain] = []
+        for n, chain_text in enumerate(initial_chains):
             file.write(f"{n + 1}. `{chain_text}`\n")
-            chain = Chain("Chain",chain_text)
+            chain = Chain("Chain", chain_text)
             chain.find_all_visualizations()
             file.write(chain.list_visualizations() + "\n")
-            previous_chains.extend([Chain("Chain",vis) for vis in chain.visualizations])
+            previous_chains.extend(
+                [Chain("Chain", vis) for vis in chain.visualizations]
+            )
         for level in range(10):
-            file.write(f"## KEY {level+1}\n\n")
+            file.write(f"## KEY {level + 1}\n\n")
             all_chains: set[Chain] = set()
             for chain in previous_chains:
                 if chain.category == "Key":
                     continue
                 all_chains.add(chain.add_key())
-            previous_chains:list[Chain] = []
+            previous_chains: list[Chain] = []
             print(f"{level + 1} : {len(all_chains)}")
-            for n,chain in enumerate(all_chains):
-                file.write(f"{n+1}. `{chain.unique_str()}`\n")
+            for n, chain in enumerate(all_chains):
+                file.write(f"{n + 1}. `{chain.unique_str()}`\n")
                 chain.find_all_visualizations()
-                #file.write(chain.list_visualizations() + "\n")
+                # file.write(chain.list_visualizations() + "\n")
+                if len(all_chains) > 5000:
+                    continue
                 for vis in chain.visualizations:
                     sub_chain = Chain("Chain", vis)
                     if sub_chain.category == "Key":
                         continue
                     previous_chains.append(sub_chain)
             file.write("\n")
+            if len(all_chains) > 5000:
+                break
