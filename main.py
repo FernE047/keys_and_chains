@@ -11,23 +11,19 @@ class Chain:
         self,
         category: ChainTypes,
         content: "list[Chain]|None" = None,
-        visualizations: set[str] | None = None,
     ) -> None:
         self.category = category
         if content is None:
             self.content: list[Chain] = []
         else:
             self.content = content
-        if visualizations is None:
-            self.visualizations: set[str] = set()
-        else:
-            self.visualizations = visualizations
-        self.visualizations.add(str(self))
+        self.visualizations: set[str] = {str(self)}
         self.has_all_vis = False
 
     def copy(self) -> "Chain":
         new_content: list[Chain] = [chain.copy() for chain in self.content]
-        chain = Chain(self.category, new_content, self.visualizations.copy())
+        chain = Chain(self.category, new_content)
+        chain.visualizations = self.visualizations.copy()
         return chain
 
     def rotate(self) -> "Chain":
