@@ -17,44 +17,57 @@ class Chain:
             self.content: list[Chain] = []
         else:
             self.content = content
-        self.visualizations: set[str] = {str(self)}
+        self.visualizations: set[str]|None = None
         self.has_all_vis = False
+        self.string = ""
+
+    def get_visualizations(self) -> set[str]:
+        if self.visualizations is None:
+            self.visualizations = {str(self)}
+        return self.visualizations
+
+    def append_visualization(self, chain:"Chain") -> None:
+        if self.visualizations is None:
+            self.visualizations = {str(self)}
+        self.visualizations.add(str(chain))
 
     def copy(self) -> "Chain":
         new_content: list[Chain] = [chain.copy() for chain in self.content]
         chain = Chain(self.category, new_content)
-        chain.visualizations = self.visualizations.copy()
+        chain.visualizations = self.get_visualizations().copy()
         return chain
 
     def rotate(self) -> "Chain":
-        new_chain = self.copy()
+        new_chain = Chain(self.category, self.content.copy())
         new_chain.content.append(new_chain.content.pop(0))
-        new_chain.visualizations.add(str(new_chain))
         return new_chain
 
     def enter(self) -> "Chain":
-        new_chain = self.content[0].copy()
+        new_chain = Chain(self.content[0].category, self.content[0].content)
         new_chain.content.append(Chain(self.category,self.content[1:])) # maybe this is a problem because we don't copy
-        new_chain.visualizations = self.visualizations.copy()
-        new_chain.visualizations.add(str(new_chain))
+        new_chain.append_visualization(new_chain)
         return new_chain
 
     def __str__(self) -> str:
+        if self.string != "":
+            return self.string
         text = ""
         if self.content:
             text += ",".join([str(chain) for chain in self.content])
         if self.category == "Chain":
-            return f"[{text}]"
-        return f"({text})"
+            self.string = f"[{text}]"
+        else:
+            self.string = f"({text})"
+        return self.string
 
     def print_visualizations(self) -> None:
-        vis_sort = sorted(self.visualizations)
+        vis_sort = sorted(self.get_visualizations())
         for n, vis in enumerate(vis_sort):
             print(f"    {n + 1}. `{vis}`")
 
     def list_visualizations(self) -> str:
         text = ""
-        vis_sort = sorted(self.visualizations)
+        vis_sort = sorted(self.get_visualizations())
         for n, vis in enumerate(vis_sort):
             text += f"    {n + 1}. `{vis}`\n"
         return text
@@ -65,19 +78,19 @@ class Chain:
         stack: list[Chain] = [self]
         while stack:
             chain = stack.pop(0)
-            enter_chain = chain.enter()
             if not chain.content:
                 continue
-            if str(enter_chain) not in self.visualizations:
-                self.visualizations.add(str(enter_chain))
+            enter_chain = chain.enter()
+            if str(enter_chain) not in self.get_visualizations():
+                self.append_visualization(enter_chain)
                 stack.append(enter_chain)
             if chain.category == "Key":
                 continue
             if len(chain.content) <= 1:
                 continue
             rotate_chain = chain.rotate()
-            if str(rotate_chain) not in self.visualizations:
-                self.visualizations.add(str(rotate_chain))
+            if str(rotate_chain) not in self.get_visualizations():
+                self.append_visualization(rotate_chain)
                 stack.append(rotate_chain)
         self.has_all_vis = True
 
@@ -85,15 +98,15 @@ class Chain:
         if not isinstance(other, Chain):
             raise NotImplementedError("only comparable with chains")
         if self.has_all_vis:
-            return str(other) in self.visualizations
+            return str(other) in self.get_visualizations()
         if other.has_all_vis:
-            return str(self) in other.visualizations
+            return str(self) in other.get_visualizations()
         self.find_all_visualizations()
-        return str(other) in self.visualizations
+        return str(other) in self.get_visualizations()
 
     def unique_str(self) -> str:
         self.find_all_visualizations()
-        vis_sort = sorted(self.visualizations, reverse=True)
+        vis_sort = sorted(self.get_visualizations(), reverse=True)
         return str(vis_sort[0])
 
     def __hash__(self) -> int:
@@ -119,8 +132,10 @@ def convert_it(text: str, index:int) -> tuple[Chain, int]:
             chain.content.append(new_chain)
             index += 1
             continue
+        chain.string = ""
         chain.visualizations = {str(chain)}
         return chain, index
+    chain.string = ""
     chain.visualizations = {str(chain)}
     return chain, index
 
@@ -129,47 +144,34 @@ def convert_text_to_chain(text: str) -> Chain:
     chain, _ = convert_it(text, 0)
     return chain
 
-
-if __name__ == "__main__":
+def main() -> None:
     begin = time.time()
-    initial_chains = [
+    initial_chains = {
         convert_text_to_chain("[[[[]]]]"),
-    ]
+        convert_text_to_chain("[[[],[]]]]"),
+    }
     text = ""
-    previous_chains: list[Chain] = []
     for n, chain in enumerate(initial_chains):
         text += f"{n + 1}. `{chain}`\n"
-        chain.find_all_visualizations()
-        text += chain.list_visualizations() + "\n"
-        previous_chains.extend(
-            [convert_text_to_chain(vis) for vis in chain.visualizations]
-        )
+    previous_chains: set[Chain] = initial_chains
     for level in range(10):
         text += f"## KEY {level + 1}\n\n"
         all_chains: set[Chain] = set()
         for chain in previous_chains:
-            if chain.category == "Key":
-                continue
-            chain.content.append(Chain("Key"))
-            chain.visualizations = {str(chain)}
-            all_chains.add(chain)
-        previous_chains: list[Chain] = []
+            for vis in chain.get_visualizations():
+                if vis[0] == "(":
+                    continue
+                sub_chain = convert_text_to_chain(f"{vis[:-1]}(){vis[-1:]}")
+                all_chains.add(sub_chain)
         print(f"{level + 1} : {len(all_chains)}")
         for n, chain in enumerate(all_chains):
             text += f"{n + 1}. `{chain.unique_str()}`\n"
-            chain.find_all_visualizations()
             # text += chain.list_visualizations() + "\n"
-            if len(all_chains) > 5000:
-                continue
-            for vis in chain.visualizations:
-                sub_chain = convert_text_to_chain(vis)
-                if sub_chain.category == "Key":
-                    continue
-                previous_chains.append(sub_chain)
         text += "\n"
-        if len(all_chains) > 5000:
-            break
+        previous_chains = all_chains
     with open("output.md", "w") as file:
         file.write(text)
-    end = time.time()
-    print(end - begin)
+    print(time.time() - begin)
+
+if __name__ == '__main__':
+    main()
