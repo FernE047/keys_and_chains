@@ -37,32 +37,19 @@ class Chain:
         return new_chain
 
     def enter(self) -> "Chain":
-        if not self.content:
-            return self.copy()
         new_chain = self.content[0].copy()
-        old_chain = self.copy()
-        old_chain.content.pop(0)
-        new_chain.content.append(old_chain)
+        new_chain.content.append(Chain(self.category,self.content[1:])) # maybe this is a problem because we don't copy
         new_chain.visualizations = self.visualizations.copy()
         new_chain.visualizations.add(str(new_chain))
         return new_chain
 
     def __str__(self) -> str:
         text = ""
-        if self.category == "Chain":
-            text += "["
-        else:
-            text += "("
         if self.content:
-            sub_chains: list[str] = []
-            for chain in self.content:
-                sub_chains.append(str(chain))
-            text += ",".join(sub_chains)
+            text += ",".join([str(chain) for chain in self.content])
         if self.category == "Chain":
-            text += "]"
-        else:
-            text += ")"
-        return text
+            return f"[{text}]"
+        return f"({text})"
 
     def print_visualizations(self) -> None:
         vis_sort = sorted(self.visualizations)
@@ -103,11 +90,10 @@ class Chain:
             raise NotImplementedError("only comparable with chains")
         if self.has_all_vis:
             return str(other) in self.visualizations
-        elif other.has_all_vis:
+        if other.has_all_vis:
             return str(self) in other.visualizations
-        else:
-            self.find_all_visualizations()
-            return str(other) in self.visualizations
+        self.find_all_visualizations()
+        return str(other) in self.visualizations
 
     def unique_str(self) -> str:
         self.find_all_visualizations()
@@ -116,11 +102,6 @@ class Chain:
 
     def __hash__(self) -> int:
         return hash(self.unique_str())
-
-    def add_key(self) -> "Chain":
-        self.content.append(Chain("Key"))
-        self.visualizations = {str(self)}
-        return self
 
 
 def convert_it(text: str, index:int) -> tuple[Chain, int]:
@@ -156,39 +137,43 @@ def convert_text_to_chain(text: str) -> Chain:
 if __name__ == "__main__":
     begin = time.time()
     initial_chains = [
-        convert_text_to_chain("[[[]]]"),
+        convert_text_to_chain("[[[[]]]]"),
     ]
-    with open("output.md", "w") as file:
+    text = ""
+    previous_chains: list[Chain] = []
+    for n, chain in enumerate(initial_chains):
+        text += f"{n + 1}. `{chain}`\n"
+        chain.find_all_visualizations()
+        text += chain.list_visualizations() + "\n"
+        previous_chains.extend(
+            [convert_text_to_chain(vis) for vis in chain.visualizations]
+        )
+    for level in range(10):
+        text += f"## KEY {level + 1}\n\n"
+        all_chains: set[Chain] = set()
+        for chain in previous_chains:
+            if chain.category == "Key":
+                continue
+            chain.content.append(Chain("Key"))
+            chain.visualizations = {str(chain)}
+            all_chains.add(chain)
         previous_chains: list[Chain] = []
-        for n, chain in enumerate(initial_chains):
-            file.write(f"{n + 1}. `{chain}`\n")
+        print(f"{level + 1} : {len(all_chains)}")
+        for n, chain in enumerate(all_chains):
+            text += f"{n + 1}. `{chain.unique_str()}`\n"
             chain.find_all_visualizations()
-            file.write(chain.list_visualizations() + "\n")
-            previous_chains.extend(
-                [convert_text_to_chain(vis) for vis in chain.visualizations]
-            )
-        for level in range(10):
-            file.write(f"## KEY {level + 1}\n\n")
-            all_chains: set[Chain] = set()
-            for chain in previous_chains:
-                if chain.category == "Key":
-                    continue
-                all_chains.add(chain.add_key())
-            previous_chains: list[Chain] = []
-            print(f"{level + 1} : {len(all_chains)}")
-            for n, chain in enumerate(all_chains):
-                file.write(f"{n + 1}. `{chain.unique_str()}`\n")
-                chain.find_all_visualizations()
-                # file.write(chain.list_visualizations() + "\n")
-                if len(all_chains) > 5000:
-                    continue
-                for vis in chain.visualizations:
-                    sub_chain = convert_text_to_chain(vis)
-                    if sub_chain.category == "Key":
-                        continue
-                    previous_chains.append(sub_chain)
-            file.write("\n")
+            # text += chain.list_visualizations() + "\n"
             if len(all_chains) > 5000:
-                break
+                continue
+            for vis in chain.visualizations:
+                sub_chain = convert_text_to_chain(vis)
+                if sub_chain.category == "Key":
+                    continue
+                previous_chains.append(sub_chain)
+        text += "\n"
+        if len(all_chains) > 5000:
+            break
+    with open("output.md", "w") as file:
+        file.write(text)
     end = time.time()
     print(end - begin)
