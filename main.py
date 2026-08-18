@@ -1,3 +1,4 @@
+import time
 from typing import Literal
 
 ChainTypes = Literal["Chain", "Key"]
@@ -9,35 +10,20 @@ class Chain:
     def __init__(
         self,
         category: ChainTypes,
-        content: "list[Chain]|str|None" = None,
+        content: "list[Chain]|None" = None,
         visualizations: set[str] | None = None,
     ) -> None:
         self.category = category
         if content is None:
             self.content: list[Chain] = []
-        elif isinstance(content, str):
-            chain = convert_text_to_chain(content)
-            self.category = chain.category
-            self.content = chain.content
         else:
             self.content = content
         if visualizations is None:
             self.visualizations: set[str] = set()
         else:
             self.visualizations = visualizations
-        self.add_visualization(self)
+        self.visualizations.add(str(self))
         self.has_all_vis = False
-
-    def link(self, content: "Chain") -> None:
-        self.content.append(content)
-        self.visualizations = set()
-        self.add_visualization(self)
-
-    def add_visualization(self, chain: "Chain") -> None:
-        self.visualizations.add(str(chain))
-
-    def copy_visualizations(self, chain: "Chain") -> None:
-        self.visualizations = chain.visualizations.copy()
 
     def copy(self) -> "Chain":
         new_content: list[Chain] = [chain.copy() for chain in self.content]
@@ -45,13 +31,9 @@ class Chain:
         return chain
 
     def rotate(self) -> "Chain":
-        if self.category == "Key":
-            return self.copy()
-        if len(self.content) <= 1:
-            return self.copy()
         new_chain = self.copy()
         new_chain.content.append(new_chain.content.pop(0))
-        new_chain.add_visualization(new_chain)
+        new_chain.visualizations.add(str(new_chain))
         return new_chain
 
     def enter(self) -> "Chain":
@@ -61,8 +43,8 @@ class Chain:
         old_chain = self.copy()
         old_chain.content.pop(0)
         new_chain.content.append(old_chain)
-        new_chain.copy_visualizations(self)
-        new_chain.add_visualization(new_chain)
+        new_chain.visualizations = self.visualizations.copy()
+        new_chain.visualizations.add(str(new_chain))
         return new_chain
 
     def __str__(self) -> str:
@@ -100,14 +82,20 @@ class Chain:
         stack: list[Chain] = [self]
         while stack:
             chain = stack.pop(0)
+            enter_chain = chain.enter()
+            if not chain.content:
+                continue
+            if str(enter_chain) not in self.visualizations:
+                self.visualizations.add(str(enter_chain))
+                stack.append(enter_chain)
+            if chain.category == "Key":
+                continue
+            if len(chain.content) <= 1:
+                continue
             rotate_chain = chain.rotate()
             if str(rotate_chain) not in self.visualizations:
-                self.add_visualization(rotate_chain)
+                self.visualizations.add(str(rotate_chain))
                 stack.append(rotate_chain)
-            enter_chain = chain.enter()
-            if str(enter_chain) not in self.visualizations:
-                self.add_visualization(enter_chain)
-                stack.append(enter_chain)
         self.has_all_vis = True
 
     def __eq__(self, other: object) -> bool:
@@ -130,54 +118,54 @@ class Chain:
         return hash(self.unique_str())
 
     def add_key(self) -> "Chain":
-        if self.category == "Key":
-            return self
-        new_chain = self.copy()
-        new_chain.link(Chain("Key"))
-        return new_chain
+        self.content.append(Chain("Key"))
+        self.visualizations = {str(self)}
+        return self
 
 
-def convert_text_to_chain(text: str | list[str]) -> Chain:
+def convert_it(text: str, index:int) -> tuple[Chain, int]:
     chain = Chain("Chain")
-    if isinstance(text, str):
-        chars = list(text)
-    else:
-        chars = text
-    char = chars.pop(0)
+    char = text[index]
     if char == "[":
         chain.category = "Chain"
     elif char == "(":
         chain.category = "Key"
-    while chars:
-        if chars[0] in ["[", "("]:
-            chain.link(convert_text_to_chain(chars))
-            continue
-        char = chars.pop(0)
+    index += 1
+    text_size = len(text)
+    while index < text_size:
+        char = text[index]
         if char == ",":
+            index += 1
             continue
-        if char in ["]", ")"]:
-            return chain
+        if char in ["[", "("]:
+            new_chain, index = convert_it(text, index)
+            chain.content.append(new_chain)
+            index += 1
+            continue
+        chain.visualizations = {str(chain)}
+        return chain, index
+    chain.visualizations = {str(chain)}
+    return chain, index
+
+
+def convert_text_to_chain(text: str) -> Chain:
+    chain, _ = convert_it(text, 0)
     return chain
 
 
 if __name__ == "__main__":
+    begin = time.time()
     initial_chains = [
-        "[[[[[[]]]]]]",
-        "[[[[[],[]]]]]",
-        "[[[[],[],[]]]]",
-        "[[[],[],[],[]]]",
-        "[[[[]],[[]]]]",
-        "[[[],[[],[]]]]"
+        convert_text_to_chain("[[[]]]"),
     ]
     with open("output.md", "w") as file:
         previous_chains: list[Chain] = []
-        for n, chain_text in enumerate(initial_chains):
-            file.write(f"{n + 1}. `{chain_text}`\n")
-            chain = Chain("Chain", chain_text)
+        for n, chain in enumerate(initial_chains):
+            file.write(f"{n + 1}. `{chain}`\n")
             chain.find_all_visualizations()
             file.write(chain.list_visualizations() + "\n")
             previous_chains.extend(
-                [Chain("Chain", vis) for vis in chain.visualizations]
+                [convert_text_to_chain(vis) for vis in chain.visualizations]
             )
         for level in range(10):
             file.write(f"## KEY {level + 1}\n\n")
@@ -195,10 +183,12 @@ if __name__ == "__main__":
                 if len(all_chains) > 5000:
                     continue
                 for vis in chain.visualizations:
-                    sub_chain = Chain("Chain", vis)
+                    sub_chain = convert_text_to_chain(vis)
                     if sub_chain.category == "Key":
                         continue
                     previous_chains.append(sub_chain)
             file.write("\n")
             if len(all_chains) > 5000:
                 break
+    end = time.time()
+    print(end - begin)
