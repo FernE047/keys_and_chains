@@ -170,7 +170,7 @@ def explore_keys(initial_chains: set[Chain]) -> None:
 
 
 def main() -> None:
-    start_level = 10
+    start_level = 7
     end_level = 10
     previous_chains: set[Chain] = set()
     text = ""
@@ -189,8 +189,7 @@ def main() -> None:
         for n, chain in enumerate(initial_chains):
             text += f"{n + 1}. `{chain}`\n"
         previous_chains = initial_chains
-        if level < start_level:
-            print(len(initial_chains))
+        if level < start_level - 1:
             continue
         explore_keys(initial_chains)
     with open("output.md", "w") as file:
