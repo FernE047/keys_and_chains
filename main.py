@@ -1,4 +1,5 @@
 import time
+from tracemalloc import start
 from typing import Literal
 
 ChainTypes = Literal["Chain", "Key"]
@@ -17,7 +18,7 @@ class Chain:
             self.content: list[Chain] = []
         else:
             self.content = content
-        self.visualizations: set[str]|None = None
+        self.visualizations: set[str] | None = None
         self.has_all_vis = False
         self.string = ""
 
@@ -26,7 +27,7 @@ class Chain:
             self.visualizations = {str(self)}
         return self.visualizations
 
-    def append_visualization(self, chain:"Chain") -> None:
+    def append_visualization(self, chain: "Chain") -> None:
         if self.visualizations is None:
             self.visualizations = {str(self)}
         self.visualizations.add(str(chain))
@@ -44,7 +45,9 @@ class Chain:
 
     def enter(self) -> "Chain":
         new_chain = Chain(self.content[0].category, self.content[0].content)
-        new_chain.content.append(Chain(self.category,self.content[1:])) # maybe this is a problem because we don't copy
+        new_chain.content.append(
+            Chain(self.category, self.content[1:])
+        )  # maybe this is a problem because we don't copy
         new_chain.append_visualization(new_chain)
         return new_chain
 
@@ -113,7 +116,7 @@ class Chain:
         return hash(self.unique_str())
 
 
-def convert_it(text: str, index:int) -> tuple[Chain, int]:
+def convert_it(text: str, index: int) -> tuple[Chain, int]:
     chain = Chain("Chain")
     char = text[index]
     if char == "[":
@@ -144,15 +147,10 @@ def convert_text_to_chain(text: str) -> Chain:
     chain, _ = convert_it(text, 0)
     return chain
 
-def main() -> None:
+
+def explore_keys(initial_chains: set[Chain]) -> None:
     begin = time.time()
-    initial_chains = {
-        convert_text_to_chain("[[[[]]]]"),
-        convert_text_to_chain("[[[],[]]]]"),
-    }
     text = ""
-    for n, chain in enumerate(initial_chains):
-        text += f"{n + 1}. `{chain}`\n"
     previous_chains: set[Chain] = initial_chains
     for level in range(10):
         text += f"## KEY {level + 1}\n\n"
@@ -169,9 +167,36 @@ def main() -> None:
             # text += chain.list_visualizations() + "\n"
         text += "\n"
         previous_chains = all_chains
-    with open("output.md", "w") as file:
-        file.write(text)
     print(time.time() - begin)
 
-if __name__ == '__main__':
+
+def main() -> None:
+    start_level = 10
+    end_level = 10
+    previous_chains: set[Chain] = set()
+    text = ""
+    for level in range(end_level):
+        text += f"\n## CHAINS {level + 1}\n\n"
+        initial_chains: set[Chain] = set()
+        if len(previous_chains) == 0:
+            initial_chains.add(convert_text_to_chain("[]"))
+        else:
+            for chain in previous_chains:
+                for vis in chain.get_visualizations():
+                    if vis[0] == "(":
+                        continue
+                    sub_chain = convert_text_to_chain(f"{vis[:-1]}[]{vis[-1:]}")
+                    initial_chains.add(sub_chain)
+        for n, chain in enumerate(initial_chains):
+            text += f"{n + 1}. `{chain}`\n"
+        previous_chains = initial_chains
+        if level < start_level:
+            print(len(initial_chains))
+            continue
+        explore_keys(initial_chains)
+    with open("output.md", "w") as file:
+        file.write(text)
+
+
+if __name__ == "__main__":
     main()
