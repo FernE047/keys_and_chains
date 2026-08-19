@@ -1,5 +1,4 @@
 import time
-from tracemalloc import start
 from typing import Literal
 
 ChainTypes = Literal["Chain", "Key"]
