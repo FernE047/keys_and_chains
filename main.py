@@ -147,7 +147,7 @@ def convert_text_to_chain(text: str) -> Chain:
     return chain
 
 
-def explore_keys(initial_chains: set[Chain]) -> None:
+def explore_keys(initial_chains: set[Chain]) -> str:
     begin = time.time()
     text = ""
     previous_chains: set[Chain] = initial_chains
@@ -160,17 +160,18 @@ def explore_keys(initial_chains: set[Chain]) -> None:
                     continue
                 sub_chain = convert_text_to_chain(f"{vis[:-1]}(){vis[-1:]}")
                 all_chains.add(sub_chain)
-        print(f"{level + 1} : {len(all_chains)}")
-        for n, chain in enumerate(all_chains):
-            text += f"{n + 1}. `{chain.unique_str()}`\n"
-            # text += chain.list_visualizations() + "\n"
-        text += "\n"
+        message = f"{level + 1} : {len(all_chains)}\n"
+        print(message)
+        text += message
         previous_chains = all_chains
+        if len(previous_chains) >= 50000:
+            return text
     print(time.time() - begin)
+    return text
 
 
 def main() -> None:
-    start_level = 7
+    start_level = 9
     end_level = 10
     previous_chains: set[Chain] = set()
     text = ""
@@ -191,7 +192,7 @@ def main() -> None:
         previous_chains = initial_chains
         if level < start_level - 1:
             continue
-        explore_keys(initial_chains)
+        text += explore_keys(initial_chains)
     with open("output.md", "w") as file:
         file.write(text)
 
