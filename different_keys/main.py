@@ -1,23 +1,15 @@
 import time
-from typing import Literal
 
-ChainTypes = Literal["Chain", "Key"]
 LETTERS = "ABCDEZXYWT"
 
 
 class Chain:
-    category: ChainTypes
-
     def __init__(
         self,
-        category: ChainTypes,
-        content: "list[Chain]|None" = None,
-        name: str = ""
+        content: "list[Chain|str]|None" = None,
     ) -> None:
-        self.name = name
-        self.category = category
         if content is None:
-            self.content: list[Chain] = []
+            self.content: list[Chain | str] = []
         else:
             self.content = content
         self.visualizations: set[str] | None = None
@@ -35,29 +27,38 @@ class Chain:
         self.visualizations.add(str(chain))
 
     def copy(self) -> "Chain":
-        new_content: list[Chain] = [chain.copy() for chain in self.content]
-        chain = Chain(self.category, new_content)
+        new_content: list[Chain | str] = [
+            chain.copy() if isinstance(chain, Chain) else chain
+            for chain in self.content
+        ]
+        chain = Chain(new_content)
         chain.visualizations = self.get_visualizations().copy()
         return chain
 
     def rotate(self) -> "Chain":
-        new_chain = Chain(self.category, self.content.copy())
+        new_chain = Chain(self.content.copy())
         new_chain.content.append(new_chain.content.pop(0))
         return new_chain
 
     def enter(self) -> "Chain":
         new_chain = Chain(
-            self.content[0].category, [c.copy() for c in self.content[0].content]
+            [
+                chain.copy() if isinstance(chain, Chain) else chain
+                for chain in self.content[0].content  # type:ignore
+            ]
         )
         new_chain.content.append(
-            Chain(self.category, [c.copy() for c in self.content[1:]])
+            Chain(
+                [
+                    chain.copy() if isinstance(chain, Chain) else chain
+                    for chain in self.content[1:]  # type:ignore
+                ]
+            )
         )
         new_chain.append_visualization(new_chain)
         return new_chain
 
     def __str__(self) -> str:
-        if self.category == "Key":
-            return self.name
         if self.string != "":
             return self.string
         text = ""
@@ -86,13 +87,11 @@ class Chain:
             chain = stack.pop(0)
             if not chain.content:
                 continue
-            if chain.content[0].category != "Key":
+            if isinstance(chain.content[0], Chain):
                 enter_chain = chain.enter()
                 if str(enter_chain) not in self.get_visualizations():
                     self.append_visualization(enter_chain)
                     stack.append(enter_chain)
-            if chain.category == "Key":
-                continue
             if len(chain.content) <= 1:
                 continue
             rotate_chain = chain.rotate()
@@ -119,21 +118,13 @@ class Chain:
     def __hash__(self) -> int:
         return hash(self.unique_str())
 
-    def __repr__(self) -> str:
-        return (f"{self.category} : {self.name} : {self.content}")
 
-
-def convert_it(text: str, index: int) -> tuple[Chain, int]:
-    chain = Chain("Chain")
+def convert_it(text: str, index: int) -> tuple[Chain|str, int]:
+    chain = Chain()
     char = text[index]
     index += 1
-    if char in ["[","]"]:
-        chain.category = "Chain"
-    else:
-        chain.category = "Key"
-        chain.name = char
-        chain.string = char
-        return chain, index
+    if char not in ["[", "]"]:
+        return char, index
     text_size = len(text)
     while index < text_size:
         char = text[index]
@@ -151,6 +142,7 @@ def convert_it(text: str, index: int) -> tuple[Chain, int]:
 
 def convert_text_to_chain(text: str) -> Chain:
     chain, _ = convert_it(text, 0)
+    assert isinstance(chain, Chain)
     return chain
 
 
