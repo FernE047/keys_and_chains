@@ -171,7 +171,7 @@ def explore_keys(initial_chains: set[Chain]) -> str:
 
 
 def main() -> None:
-    start_level = 9
+    start_level = 1
     end_level = 10
     previous_chains: set[Chain] = set()
     text = ""
