@@ -1,4 +1,5 @@
 import time
+from collections import deque
 
 
 class Chain:
@@ -12,16 +13,6 @@ class Chain:
             self.content = content
         self.string = ""
 
-    def rotate(self) -> "Chain":
-        new_chain = Chain(self.content.copy())
-        new_chain.content.append(new_chain.content.pop(0))
-        return new_chain
-
-    def enter(self) -> "Chain":
-        new_chain = Chain(self.content[0].content.copy()) #type:ignore
-        new_chain.content.append(Chain(self.content[1:].copy()))
-        return new_chain
-
     def __str__(self) -> str:
         if self.string != "":
             return self.string
@@ -31,26 +22,6 @@ class Chain:
                 text += str(chain)
         return f"[{text}]"
 
-    def get_visualizations(self) -> "list[str]":
-        visualizations: list[str] = [str(self)]
-        stack: list[Chain] = [self]
-        while stack:
-            chain = stack.pop(0)
-            if not chain.content:
-                continue
-            if isinstance(chain.content[0], Chain):
-                enter_chain = chain.enter()
-                if str(enter_chain) not in visualizations:
-                    visualizations.append(str(enter_chain))
-                    stack.append(enter_chain)
-            if len(chain.content) <= 1:
-                continue
-            rotate_chain = chain.rotate()
-            if str(rotate_chain) not in visualizations:
-                visualizations.append(str(rotate_chain))
-                stack.append(rotate_chain)
-        return visualizations
-
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Chain):
             raise NotImplementedError("only comparable with chains")
@@ -59,9 +30,29 @@ class Chain:
     def unique_str(self) -> str:
         if self.string:
             return self.string
-        vis_sort = sorted(self.get_visualizations(), reverse=True)
+        visualizations: set[str] = {str(self)}
+        stack: deque[Chain] = deque([self])
+        while stack:
+            chain = stack.popleft()
+            if not chain.content:
+                continue
+            if isinstance(chain.content[0], Chain):
+                enter_chain = Chain(chain.content[0].content.copy())  # type:ignore
+                enter_chain.content.append(Chain(chain.content[1:].copy()))
+                chain_str = str(enter_chain)
+                if chain_str not in visualizations:
+                    visualizations.add(chain_str)
+                    stack.append(enter_chain)
+            if len(chain.content) <= 1:
+                continue
+            rotate_chain = Chain(chain.content.copy())
+            rotate_chain.content.append(rotate_chain.content.pop(0))
+            chain_str = str(rotate_chain)
+            if chain_str not in visualizations:
+                visualizations.add(chain_str)
+                stack.append(rotate_chain)
+        vis_sort = sorted(visualizations, reverse=True)
         self.string = vis_sort[0]
-        self.visualizations = None
         return self.string
 
     def __hash__(self) -> int:
