@@ -87,28 +87,20 @@ class Chain:
     def __hash__(self) -> int:
         return hash(self.unique_str())
 
-
-def convert_it(text: str, index: int) -> tuple[Chain | str, int]:
-    chain = Chain()
-    char = text[index]
-    index += 1
-    if char not in ["[", "]"]:
-        return char, index
-    text_size = len(text)
-    while index < text_size:
-        char = text[index]
-        if char == "]":
-            index += 1
-            return chain, index
-        new_chain, index = convert_it(text, index)
-        chain.content.append(new_chain)
-    return chain, index
-
-
-def convert_text_to_chain(text: str) -> Chain:
-    chain, _ = convert_it(text, 0)
-    assert isinstance(chain, Chain)
-    return chain
+def convert(text:str) -> Chain:
+    chain_stack: list[Chain] = [Chain()]
+    for char in text[1:]:
+        if char == "[":
+            new_chain = Chain()
+            chain_stack[-1].content.append(new_chain)
+            chain_stack.append(new_chain)
+        elif char == "]":
+            if len(chain_stack) == 1:
+                return chain_stack[0]
+            chain_stack.pop()
+        else:
+            chain_stack[-1].content.append(char)
+    return chain_stack[0]
 
 
 def explore_keys(initial_chains: set[Chain]) -> None:
@@ -120,7 +112,7 @@ def explore_keys(initial_chains: set[Chain]) -> None:
         for chain in previous_chains:
             chain_str = str(chain)
             for index in range(1,len(chain_str)):
-                sub_chain = convert_text_to_chain(
+                sub_chain = convert(
                     f"{chain_str[:index]}K{chain_str[index:]}"
                 )
                 all_chains.add(sub_chain)
@@ -139,11 +131,11 @@ def main() -> None:
         print(f"\n## CHAINS {level + 1}\n")
         initial_chains: set[Chain] = set()
         if len(previous_chains) == 0:
-            initial_chains.add(convert_text_to_chain("[]"))
+            initial_chains.add(convert("[]"))
         for chain in previous_chains:
             chain_str = str(chain)
             for index in range(1,len(chain_str)):
-                sub_chain = convert_text_to_chain(
+                sub_chain = convert(
                     f"{chain_str[:index]}[]{chain_str[index:]}"
                 )
                 initial_chains.add(sub_chain)
@@ -155,4 +147,5 @@ def main() -> None:
             break
 
 if __name__ == "__main__":
-    main()
+    import cProfile
+    cProfile.run("main()")
