@@ -101,12 +101,7 @@ class Chain:
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Chain):
             raise NotImplementedError("only comparable with chains")
-        if self.has_all_vis:
-            return str(other) in self.get_visualizations()
-        if other.has_all_vis:
-            return str(self) in other.get_visualizations()
-        self.find_all_visualizations()
-        return str(other) in self.get_visualizations()
+        return self.unique_str() == other.unique_str()
 
     def unique_str(self) -> str:
         self.find_all_visualizations()
@@ -144,38 +139,29 @@ def convert_text_to_chain(text: str) -> Chain:
     return chain
 
 
-def explore_keys(initial_chains: set[Chain]) -> str:
+def explore_keys(initial_chains: set[Chain]) -> None:
     begin = time.time()
-    text = ""
     previous_chains: set[Chain] = initial_chains
     for level in range(10):
-        message = f"## KEY {level + 1}\n\n"
-        text += message
-        print(message)
+        print(f"## KEY {level + 1}\n")
         all_chains: set[Chain] = set()
         for chain in previous_chains:
             for vis in chain.get_visualizations():
                 sub_chain = convert_text_to_chain(f"{vis[:-1]}K{vis[-1:]}")
                 all_chains.add(sub_chain)
-        message = f"{level + 1} : {len(all_chains)}\n"
-        print(message)
-        text += message
+        print(f"{level + 1} : {len(all_chains)}")
         previous_chains = all_chains
         if len(previous_chains) >= 500000:
-            return text
+            return 
     print(time.time() - begin)
-    return text
 
 
 def main() -> None:
     start_level = 1
     end_level = 10
     previous_chains: set[Chain] = set()
-    text = ""
     for level in range(end_level):
-        message = f"\n## CHAINS {level + 1}\n\n"
-        text += message
-        print(message)
+        print(f"\n## CHAINS {level + 1}\n")
         initial_chains: set[Chain] = set()
         if len(previous_chains) == 0:
             initial_chains.add(convert_text_to_chain("[]"))
@@ -186,14 +172,9 @@ def main() -> None:
                         continue
                     sub_chain = convert_text_to_chain(f"{vis[:-1]}[]{vis[-1:]}")
                     initial_chains.add(sub_chain)
-        for n, chain in enumerate(initial_chains):
-            text += f"{n + 1}. `{chain}`\n"
         previous_chains = initial_chains
         if level < start_level - 1:
             continue
-        text += explore_keys(initial_chains)
-    with open("output.md", "w") as file:
-        file.write(text)
 
 
 if __name__ == "__main__":
