@@ -96,7 +96,7 @@ def explore_keys(initial_chains: set[Chain]) -> None:
 
 def main() -> None:
     start_level = 1
-    end_level = 5
+    end_level = 10
     previous_chains: set[Chain] = set()
     for level in range(end_level):
         print(f"\n## CHAINS {level + 1}\n")
@@ -118,5 +118,4 @@ def main() -> None:
             break
 
 if __name__ == "__main__":
-    import cProfile
-    cProfile.run("main()")
+    main()
