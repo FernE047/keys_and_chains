@@ -12,15 +12,19 @@ class Chain:
         else:
             self.content = content
         self.string = ""
+        self.unique_string = ""
 
     def __str__(self) -> str:
+        if self.unique_string != "":
+            return self.unique_string
         if self.string != "":
             return self.string
         text = ""
         if self.content:
             for chain in self.content:
                 text += str(chain)
-        return f"[{text}]"
+        self.string = f"[{text}]"
+        return self.string
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Chain):
@@ -28,8 +32,8 @@ class Chain:
         return self.unique_str() == other.unique_str()
 
     def unique_str(self) -> str:
-        if self.string:
-            return self.string
+        if self.unique_string != "":
+            return self.unique_string
         visualizations: set[str] = {str(self)}
         stack: deque[Chain] = deque([self])
         while stack:
@@ -52,9 +56,8 @@ class Chain:
                 visualizations.add(chain_str)
                 stack.append(rotate_chain)
         vis_sort = sorted(visualizations, reverse=True)
-        self.string = vis_sort[0]
-        return self.string
-
+        self.unique_string = vis_sort[0]
+        return self.unique_string
     def __hash__(self) -> int:
         return hash(self.unique_str())
 
@@ -96,7 +99,7 @@ def explore_keys(initial_chains: set[Chain]) -> None:
 
 def main() -> None:
     start_level = 1
-    end_level = 10
+    end_level = 5
     previous_chains: set[Chain] = set()
     for level in range(end_level):
         print(f"\n## CHAINS {level + 1}\n")
@@ -118,4 +121,5 @@ def main() -> None:
             break
 
 if __name__ == "__main__":
-    main()
+    import cProfile
+    cProfile.run("main()")
