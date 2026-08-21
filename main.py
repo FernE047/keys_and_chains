@@ -12,34 +12,14 @@ class Chain:
             self.content = content
         self.string = ""
 
-    def copy(self) -> "Chain":
-        new_content: list[Chain | str] = [
-            chain.copy() if isinstance(chain, Chain) else chain
-            for chain in self.content
-        ]
-        chain = Chain(new_content)
-        return chain
-
     def rotate(self) -> "Chain":
         new_chain = Chain(self.content.copy())
         new_chain.content.append(new_chain.content.pop(0))
         return new_chain
 
     def enter(self) -> "Chain":
-        new_chain = Chain(
-            [
-                chain.copy() if isinstance(chain, Chain) else chain
-                for chain in self.content[0].content  # type:ignore
-            ]
-        )
-        new_chain.content.append(
-            Chain(
-                [
-                    chain.copy() if isinstance(chain, Chain) else chain
-                    for chain in self.content[1:]  # type:ignore
-                ]
-            )
-        )
+        new_chain = Chain(self.content[0].content.copy()) #type:ignore
+        new_chain.content.append(Chain(self.content[1:].copy()))
         return new_chain
 
     def __str__(self) -> str:
