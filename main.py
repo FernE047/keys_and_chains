@@ -155,5 +155,4 @@ def main() -> None:
             break
 
 if __name__ == "__main__":
-    import cProfile
-    cProfile.run("main()")
+    main()
