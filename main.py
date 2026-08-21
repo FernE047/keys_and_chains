@@ -1,20 +1,13 @@
 import time
-from typing import Literal
-
-ChainTypes = Literal["Chain", "Key"]
 
 
 class Chain:
-    category: ChainTypes
-
     def __init__(
         self,
-        category: ChainTypes,
-        content: "list[Chain]|None" = None,
+        content: "list[Chain|str]|None" = None,
     ) -> None:
-        self.category = category
         if content is None:
-            self.content: list[Chain] = []
+            self.content: list[Chain | str] = []
         else:
             self.content = content
         self.visualizations: set[str] | None = None
@@ -32,21 +25,34 @@ class Chain:
         self.visualizations.add(str(chain))
 
     def copy(self) -> "Chain":
-        new_content: list[Chain] = [chain.copy() for chain in self.content]
-        chain = Chain(self.category, new_content)
+        new_content: list[Chain | str] = [
+            chain.copy() if isinstance(chain, Chain) else chain
+            for chain in self.content
+        ]
+        chain = Chain(new_content)
         chain.visualizations = self.get_visualizations().copy()
         return chain
 
     def rotate(self) -> "Chain":
-        new_chain = Chain(self.category, self.content.copy())
+        new_chain = Chain(self.content.copy())
         new_chain.content.append(new_chain.content.pop(0))
         return new_chain
 
     def enter(self) -> "Chain":
-        new_chain = Chain(self.content[0].category, self.content[0].content)
+        new_chain = Chain(
+            [
+                chain.copy() if isinstance(chain, Chain) else chain
+                for chain in self.content[0].content  # type:ignore
+            ]
+        )
         new_chain.content.append(
-            Chain(self.category, self.content[1:])
-        )  # maybe this is a problem because we don't copy
+            Chain(
+                [
+                    chain.copy() if isinstance(chain, Chain) else chain
+                    for chain in self.content[1:]  # type:ignore
+                ]
+            )
+        )
         new_chain.append_visualization(new_chain)
         return new_chain
 
@@ -55,12 +61,9 @@ class Chain:
             return self.string
         text = ""
         if self.content:
-            text += ",".join([str(chain) for chain in self.content])
-        if self.category == "Chain":
-            self.string = f"[{text}]"
-        else:
-            self.string = f"({text})"
-        return self.string
+            for chain in self.content:
+                text += str(chain)
+        return f"[{text}]"
 
     def print_visualizations(self) -> None:
         vis_sort = sorted(self.get_visualizations())
@@ -82,12 +85,11 @@ class Chain:
             chain = stack.pop(0)
             if not chain.content:
                 continue
-            enter_chain = chain.enter()
-            if str(enter_chain) not in self.get_visualizations():
-                self.append_visualization(enter_chain)
-                stack.append(enter_chain)
-            if chain.category == "Key":
-                continue
+            if isinstance(chain.content[0], Chain):
+                enter_chain = chain.enter()
+                if str(enter_chain) not in self.get_visualizations():
+                    self.append_visualization(enter_chain)
+                    stack.append(enter_chain)
             if len(chain.content) <= 1:
                 continue
             rotate_chain = chain.rotate()
@@ -115,28 +117,22 @@ class Chain:
         return hash(self.unique_str())
 
 
-def convert_it(text: str, index: int) -> tuple[Chain, int]:
-    chain = Chain("Chain")
+def convert_it(text: str, index: int) -> tuple[Chain | str, int]:
+    chain = Chain()
     char = text[index]
-    if char == "[":
-        chain.category = "Chain"
-    elif char == "(":
-        chain.category = "Key"
     index += 1
+    if char not in ["[", "]"]:
+        return char, index
     text_size = len(text)
     while index < text_size:
         char = text[index]
-        if char == ",":
+        if char == "]":
+            chain.string = ""
+            chain.visualizations = {str(chain)}
             index += 1
-            continue
-        if char in ["[", "("]:
-            new_chain, index = convert_it(text, index)
-            chain.content.append(new_chain)
-            index += 1
-            continue
-        chain.string = ""
-        chain.visualizations = {str(chain)}
-        return chain, index
+            return chain, index
+        new_chain, index = convert_it(text, index)
+        chain.content.append(new_chain)
     chain.string = ""
     chain.visualizations = {str(chain)}
     return chain, index
@@ -144,6 +140,7 @@ def convert_it(text: str, index: int) -> tuple[Chain, int]:
 
 def convert_text_to_chain(text: str) -> Chain:
     chain, _ = convert_it(text, 0)
+    assert isinstance(chain, Chain)
     return chain
 
 
@@ -152,19 +149,19 @@ def explore_keys(initial_chains: set[Chain]) -> str:
     text = ""
     previous_chains: set[Chain] = initial_chains
     for level in range(10):
-        text += f"## KEY {level + 1}\n\n"
+        message = f"## KEY {level + 1}\n\n"
+        text += message
+        print(message)
         all_chains: set[Chain] = set()
         for chain in previous_chains:
             for vis in chain.get_visualizations():
-                if vis[0] == "(":
-                    continue
-                sub_chain = convert_text_to_chain(f"{vis[:-1]}(){vis[-1:]}")
+                sub_chain = convert_text_to_chain(f"{vis[:-1]}K{vis[-1:]}")
                 all_chains.add(sub_chain)
         message = f"{level + 1} : {len(all_chains)}\n"
         print(message)
         text += message
         previous_chains = all_chains
-        if len(previous_chains) >= 50000:
+        if len(previous_chains) >= 500000:
             return text
     print(time.time() - begin)
     return text
@@ -176,7 +173,9 @@ def main() -> None:
     previous_chains: set[Chain] = set()
     text = ""
     for level in range(end_level):
-        text += f"\n## CHAINS {level + 1}\n\n"
+        message = f"\n## CHAINS {level + 1}\n\n"
+        text += message
+        print(message)
         initial_chains: set[Chain] = set()
         if len(previous_chains) == 0:
             initial_chains.add(convert_text_to_chain("[]"))
