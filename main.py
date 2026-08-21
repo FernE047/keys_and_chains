@@ -31,26 +31,35 @@ class Chain:
         if self.string:
             return self.string
         visualizations: set[str] = {str(self)}
-        stack: deque[Chain] = deque([self])
-        while stack:
-            chain = stack.popleft()
-            if not chain.content:
-                continue
-            if isinstance(chain.content[0], Chain):
-                enter_chain = Chain(chain.content[0].content.copy())  # type:ignore
-                enter_chain.content.append(Chain(chain.content[1:].copy()))
-                chain_str = str(enter_chain)
-                if chain_str not in visualizations:
-                    visualizations.add(chain_str)
-                    stack.append(enter_chain)
-            if len(chain.content) <= 1:
-                continue
-            rotate_chain = Chain(chain.content.copy())
+        stack: deque[Chain] = deque()
+        if not self.content:
+            return "[]"
+        if isinstance(self.content[0],Chain):
+            stack.append(self)
+        rotate_chain = Chain(self.content.copy())
+        for _ in range(len(self.content)-1):
             rotate_chain.content.append(rotate_chain.content.pop(0))
             chain_str = str(rotate_chain)
             if chain_str not in visualizations:
+                if isinstance(rotate_chain.content[0],Chain):
+                    stack.append(Chain(rotate_chain.content.copy()))
                 visualizations.add(chain_str)
-                stack.append(rotate_chain)
+        while stack:
+            chain = stack.popleft()
+            enter_chain = Chain(chain.content[0].content.copy())  # type:ignore
+            enter_chain.content.append(Chain(chain.content[1:].copy()))
+            chain_str = str(enter_chain)
+            if len(enter_chain.content) > 1 and isinstance(enter_chain.content[0], Chain):
+                    stack.append(Chain(enter_chain.content.copy()))
+            visualizations.add(chain_str)
+            rotate_chain = Chain(enter_chain.content.copy())
+            for _ in range(len(enter_chain.content) - 1):
+                rotate_chain.content.append(rotate_chain.content.pop(0))
+                chain_str = str(rotate_chain)
+                if chain_str not in visualizations:
+                    if isinstance(rotate_chain.content[0], Chain):
+                        stack.append(Chain(rotate_chain.content.copy()))
+                    visualizations.add(chain_str)
         vis_sort = sorted(visualizations, reverse=True)
         self.string = vis_sort[0]
         return self.string
@@ -110,6 +119,7 @@ def main() -> None:
                     f"{chain_str[:index]}[]{chain_str[index:]}"
                 )
                 initial_chains.add(sub_chain)
+        print(f"{level + 1} : {len(initial_chains)}")
         previous_chains = initial_chains
         if level < start_level - 1:
             continue
