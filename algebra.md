@@ -19,21 +19,20 @@ A ordem no qual um elemento está dentro de um elo importa. É a ordem no qual o
 Cada chave e elo em um molho é denominado um Elemento Primitivo.
 Um molho sem Elementos Primitivos é um molho vazio denominado {}
 A chave ou elo segurado na imagem é chamado de elemento principal.
-Todo elemento conectado ao elemento principal está abaixo do elemento principal.
+Todo elemento conectado ao elemento principal está abaixo do elemento principal, chamamos esses elementos de filhos.
 O elemento principal está acima de todos os outros.
-O elemento principal de uma imagem possui profundidade 1, Cada elemento abaixo recebe +1 de profundidade recursivamente.
-A notação [] descreve um elo, letras descreve chaves. Dentro de [] ficam elementos do elo em ordem anti-horário.
+O elemento principal de uma imagem possui profundidade 1, Cada filho recebe +1 de profundidade recursivamente.
+A notação [] descreve um elo, letras descreve chaves. Dentro de [] ficam os filhos do elo em ordem anti-horário.
 
-- Exemplo: `[[]abc[d]]` Nesse molho temos um elo principal com (1 elo vazio, 3 chaves sendo elas a,b e c, e temos outro elo que possui uma chave d dentro dele). Nem sempre é possivel descrever facilmente em texto um molho de chaves.
+- Exemplo: `[[]abc[d]]` Nesse molho temos um elo principal com {1 elo vazio, 3 chaves sendo elas a,b e c, e temos outro elo que possui uma chave d dentro dele}. Nem sempre é possivel descrever facilmente em texto um molho de chaves.
 
-A notação ... serve para representar que existem elementos não especificados entre os elementos descritos
-O elemento principal na notação é o elo ou chave que segura toda os elementos da imagem dentro dela.
+O elemento principal na notação é o elo ou chave que segura todos os elementos da imagem dentro dela.
 
 - Exemplo: `[[][]abc[d]]`, o elemento principal é o elo externo `[...]`
 
 É possível fazer que uma chave seja um elemento principal nesse caso fazemos a imagem do molho começar e terminar com a letra que descreve a chave `k...k`.
-Esse sistema aplica-se para caso chaves sejam diferentes, só utilizar diferentes letras para representar cada chave.
-Se estivermos falando de elos diferentes e identificaveis, adicionamos um número após [ e ] para identificar qual o tipo de elo. Afinal alguns molhos de chave possuem elos de diferentes formatos ou tamanhos.
+Esse próximo sistema aplica-se para caso chaves sejam diferentes, é só utilizar diferentes letras para representar cada chave.
+Se estivermos falando de elos diferentes e identificáveis, adicionamos um número após [ e ] para identificar qual o tipo de elo. Afinal alguns molhos de chave possuem elos de diferentes formatos ou tamanhos.
 
 - Exemplo: `[0[1k]1p]0` é um elo 0 ligado a um elo 1 e uma chave p, dentro do elo 1 temos uma outra chave k, segue abaixo as outras imagens desse molho:
 
@@ -53,9 +52,9 @@ Quando falarmos de função, a imagem é representada pelas variaveis i,j ou k. 
 
 Algumas funções númericas que auxiliam o estudo de Molhos. Essas funções são aplicadas a imagens ou molhos que retornam números
 
-### 1.1. F(i): contagem no elemento principal
+### 1.1. F(i): contagem de filhos
 
-A função F(i) retorna quantos elementos existem no elemento principal em um imagem
+A função F(i) retorna quantos filhos o elemento principal possui
 
 - Exemplo 1: F(`[[]abc[d]]`) = 5
 - Exemplo 2: F(`[k[][][[[]]]kkk]`) = 7
@@ -144,9 +143,9 @@ Agora definimos funções que alteram a imagem mantendo o molho:
 
 ### 1. rl(i): Rotation Left
 
-A função rl(i) retorna uma imagem no qual o último elemento do elemento principal se torna o primeiro. Rotacionando a ordem dos elementos.
+A função rl(i) retorna uma imagem no qual o último filho do elemento principal se torna o primeiro. Rotacionando a ordem dos filhos.
 Fisicamente é o mesmo que rotacionar os elementos de um elo no sentido anti-horário
-Se o elemento principal não possui elementos abaixo ou possui apenas um elemento, aplicar rl é nulo e retorna a mesma imagem. Logo se o elemento principal for uma chave a aplicação de rl é nula pois chaves semprre tem apenas um elemento
+Se o elemento principal não possui filhos ou possui apenas um filho, aplicar rl é nulo e retorna a mesma imagem. Logo se o elemento principal for uma chave a aplicação de rl é nula pois chaves semprre tem apenas um filho.
 Aplicar rl ao molho vazio retorna o molho vazio
 
 - rl(`[k[]k[]]`) = `[[]k[]k]`
@@ -170,7 +169,7 @@ f^-1 desfaz a operação
 - rl^1000(`[]`) = `[]`
 
 Como a rotação é algo cíclico, a cada F(i) rotações obtemos a mesma imagem que inicialmente: rl^(F(i))(i) = i
-Pela mesma propriedade cíclica, rl^m = rl^(m mod F(i))
+Pela mesma propriedade cíclica obtemos rl^m = rl^(m mod F(i)), F(i) rotações se anulam.
 rl^(F(i)-1) = rl^-1
 
 Algumas imagens altamente simétricas possuem ciclos menores. defino aqui a função C(i) que retorna o menor ciclo de rotações de uma imagem maior que zero. logo rl^(C(i)) = i
@@ -181,18 +180,23 @@ Algumas imagens altamente simétricas possuem ciclos menores. defino aqui a fun�
 
 ### 2. rr(i): Rotation Right
 
-A função rr(i) retorna uma imagem no qual o primeiro elemento do elemento principal se torna o último. Rotacionando a ordem dos elementos.
+A função rr(i) retorna uma imagem no qual o primeiro filho do elemento principal se torna o último. Rotacionando a ordem dos elementos.
 Fisicamente é o mesmo que rotacionar os elementos de um elo no sentido horário
 Todas as propriedades de uma rotação normal se aplicam a Rotação Right.
-Como a Rotação Right age como inverso da rotação, temos a identidade r^-1 = rr
+Como a Rotação Right age como inverso da rotação, temos a identidade rl^-1(i) = rr(i); e rr^-1(i) = rl(i)
 
 rl(rr(i)) = i
 rr(rl(i)) = i
 
+logo:
+
+rl(i) = rr^(F(i)-1)
+rr(i) = rl^(F(i)-1)
+
 ### 3. hl(i): Hold Left
 
-A função hl(i) retorna uma imagem no qual o primeiro elemento do elemento principal se torna o elemento principal. Os outros elementos ficam a direita.
-Fisicamente hold é o mesmo que segurar outro elo ou chave. nesse caso especificamente o primeiro, mais a esquerda.
+A função hl(i) retorna uma imagem no qual o primeiro filho se torna o elemento principal. O elemento principal anterior com o filho removido é adicionado a esquerda no novo elemento principal.
+Fisicamente hold left é o mesmo que passar a segurar o elo ou chave mais a esquerda. 
 Se o elemento principal não possui elementos abaixo, aplicar hl() é nulo e retorna a mesma imagem.
 Aplicar el ao molho vazio retorna o molho vazio
 
@@ -206,19 +210,19 @@ Aplicar el ao molho vazio retorna o molho vazio
 - hl(`[[[]kk[[][]]]k[]]`) = `[[k[]][]kk[[][]]]`
 
 Uma forma de descrever o procedimento é: remover o primeiro elemento completamente, esse removido daremos o nome de principal e o elemento principal anterior é o resíduo. então linkamos o residuo no começo do elemento principal atual.
-Mais para frente teremos outra maneira de descrever hold usando linkagem e remoção.
-hl(hl(i)) = i
-el^-1(i) = hl(i)
+Mais para frente teremos outra maneira de descrever hold usando linkagem e extração. Hold só foi introduzido agora pois não altera o molho e é uma das funções principais junto com rotate left e right.
+hl(hl(i)) = i ou hl^2(i) = i
+hl^-1(i) = hl(i)
 
-Como a função não altera o molho temos que dado hl(i) = j; i ≡ j
-as funções númericas de 1.2. a 1.7. continuam ocm o mesmo valor, F(i) e D(i) podem mudar ao aplicar e.
+Como a função não altera o molho temos: se hl(i) = j; então i ≡ j.
+As funções númericas de 1.2. a 1.7. continuam com o mesmo valor, F(i) e D(i) podem mudar ao aplicar hold.
 
 ### 4. hr(i): Hold Right
 
-A função hr(i) retorna uma imagem no qual o último elemento do elemento principal se torna o elemento principal. Os outros elementos ficam a esquerda.
-Fisicamente hold é o mesmo que segurar outro elo ou chave. nesse caso especificamente o último, mais a direita.
-aqui o residuo é colocado a direita dos outros elementos.
-as propriedades de hold se aplicam a hold right
+A função hl(i) retorna uma imagem no qual o último filho se torna o elemento principal. O elemento principal anterior com o filho removido é adicionado a direita no novo elemento principal.
+Fisicamente hold right é o mesmo que passar a segurar o elo ou chave mais a direita. 
+Aqui o resíduo é colocado a direita dos outros elementos.
+As propriedades de hold se aplicam a hold right
 
 - hr(`[[]k]`) = `k[[]]k`
 - hr(`[[]k[]k]`) = `k[[]k[]]k`
@@ -238,17 +242,18 @@ hr(`[kk[[]]]`) = `[[][kk]]`
 rl(hr(i)) = hl(rr(i))
 rl(hr(`[kk[[]]]`)) = hl(rr(`[kk[[]]]`))
 rl(`[[][kk]]`) = hl(`[[[]]kk]`)
-`[[kk][]]` = el`[[kk][]]`
+`[[kk][]]` = `[[kk][]]`
 
 hl(i) = rl(hr(rr(i)))
 
 ### 5. dl(m): Delete Left
 
-dl M→M deleta o elemento mais à esquerda e ficamos com o resto
+A função deleta o elemento mais à esquerda dentro do elemento principal. Ficamos com o elemento Principal.
+se o elemento principal não possui elementos 
 
 ### 6. dr(m): Delete Right
 
-dr M→M deleta o elemento mais à direita e ficamos com o resto
+dr M→M deleta o elemento mais à direita
 
 ### 7. el(m): Extract Left
 
