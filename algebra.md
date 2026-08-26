@@ -1,50 +1,3 @@
-r(`[]`) = `[]`
-r(`[[]]`) = `[[]]`
-r(`[`n`]`) = `[`n`]`
-r(`k[]k`) = `k[]k`
-r(`k`n`k`) = `k`n`k`
-r(`[[]k]`) = `[k[]]`; `[[]k]` ≡ `[k[]]`
-r(`[[]k[]]`) = `[[][]k]`; `[[]k[]]` ≡ `[[][]k]`
-e(`[]`) = `[]`
-e(`[[]]`) = `[[]]`
-e(`[[]k]`) = `[[k]]`; `[[]k]` ≡ `[[k]]`
-e(`[k[]]`) = `([[]])`;
-
-r(n) ≡ n
-e(n) ≡ n
-
-`[[]k]` ≡ `[k[]]` ≡ `[[k]]`
-
-`[]` + `[]` = `[[]]`
-`[[]k]` + `[[]k]` =? `[[]k]` + `[[]k]`
-`[[]k[[]k]]` = `[[]k[[]k]]`
-
-a + b = b + a when a = b
-
-`[[]k]` + `[k[]]` =? `[k[]]` + `[[]k]`
-`[[]k[k[]]]` =? `[k[][[]k]]`
-`[[k[]][]k]` =? `[k[][[]k]]`
-`[k[][[]k]]` ≡ `[k[][[]k]]`
-
-a + b ≡ b + a when a ≡ b
-
-`[[]k]` + `[]` = `[[]k[]]`
-`[]` + `[[]k]` = `[[[]k]]` ≡ `[[]k[]]`
-
-`[[]k]` + `[[[]]k]` =? `[[[]]k]` + `[[]k]`
-`[[]k[[[]]k]]` =? `[[[]]k[[]k]]` ≡
-`[[[]k][[]]k]` ≡ `[[]k[[[]]k]]`
-`[[]k[[[]]k]]` ≡ `[[[]]k[[]k]]`
-
-a + b ≡ b + a when a ≡/ b or a =/ b
-a + b ≡/ ra + b when ra =/ a
-a + b ≡/ ea + b when ea =/ a
-
-(`[[]k]` + `[]`) + `[[[]]]` =? `[[]k]` + (`[]` + `[[[]]]`)
-`[[]k[][[[]]]]` =? `[[]k[[[[]]]]]` nope
-
-okay... é hora de formalizar.
-
 # Teoria dos Molhos
 
 ## Formalização
@@ -189,7 +142,7 @@ Outras funções que podem ser úteis e serão adicionadas no futuro:
 Funções imagéticas são imagens que alteram a imagem mantendo o molho o mesmo. Há somente duas funções imagéticas principais, outras funções imagéticas são composições das funções principais.
 Agora definimos funções que alteram a imagem mantendo o molho:
 
-### 1. rl(i): Rotation-left
+### 1. rl(i): Rotation Left
 
 A função rl(i) retorna uma imagem no qual o último elemento do elemento principal se torna o primeiro. Rotacionando a ordem dos elementos.
 Fisicamente é o mesmo que rotacionar os elementos de um elo no sentido anti-horário
@@ -226,72 +179,87 @@ Algumas imagens altamente simétricas possuem ciclos menores. defino aqui a fun�
 - C(`[k[[]k[]][]k[[]k[]][]]`) = 3, porque rl(rl(rl(`[k[[]k[]][]k[[]k[]][]]`))) = `[k[[]k[]][]k[[]k[]][]]`
 - C(`[k[]kk[][][[[]]]]`) = 7 = F(`[k[]kk[][][[[]]]]`).
 
-### 2. rr(i): Anti-Rotation (rotation-right)
+### 2. rr(i): Rotation Right
 
 A função rr(i) retorna uma imagem no qual o primeiro elemento do elemento principal se torna o último. Rotacionando a ordem dos elementos.
 Fisicamente é o mesmo que rotacionar os elementos de um elo no sentido horário
-Todas as propriedades de uma rotação normal se aplicam a anti-rotação.
-Como a anti-rotação age como inverso da rotação, temos a identidade r^-1 = rr
+Todas as propriedades de uma rotação normal se aplicam a Rotação Right.
+Como a Rotação Right age como inverso da rotação, temos a identidade r^-1 = rr
 
 rl(rr(i)) = i
 rr(rl(i)) = i
 
-### 3. el(i): Enter (left)
+### 3. hl(i): Hold Left
 
-A função el(i) retorna uma imagem no qual o primeiro elemento do elemento principal se torna o elemento principal. Os outros elementos ficam a direita.
-Fisicamente enter é o mesmo que segurar outro elo ou chave. nesse caso especificamente o primeiro, mais a esquerda.
-Se o elemento principal não possui elementos abaixo, aplicar el() é nulo e retorna a mesma imagem.
+A função hl(i) retorna uma imagem no qual o primeiro elemento do elemento principal se torna o elemento principal. Os outros elementos ficam a direita.
+Fisicamente hold é o mesmo que segurar outro elo ou chave. nesse caso especificamente o primeiro, mais a esquerda.
+Se o elemento principal não possui elementos abaixo, aplicar hl() é nulo e retorna a mesma imagem.
 Aplicar el ao molho vazio retorna o molho vazio
 
-- el(`[[]k]`) = `[[k]]`
-- el(`[[]k[]k]`) = `[[k[]k]]`
-- el(`[kk[[]]]`) = `k[k[[]]]k`
-- el(`[]`) = `[]`
-- el(`[[k[]k]]`) = `[[]k[]k]`
-- el(`{}`) = `{}`
-- el(`k[[][k[]k]]k`) = `[k[][k[]k]]`
-- el(`[[[]kk[[][]]]k[]]`) = `[[k[]][]kk[[][]]]`
+- hl(`[[]k]`) = `[[k]]`
+- hl(`[[]k[]k]`) = `[[k[]k]]`
+- hl(`[kk[[]]]`) = `k[k[[]]]k`
+- hl(`[]`) = `[]`
+- hl(`[[k[]k]]`) = `[[]k[]k]`
+- hl(`{}`) = `{}`
+- hl(`k[[][k[]k]]k`) = `[k[][k[]k]]`
+- hl(`[[[]kk[[][]]]k[]]`) = `[[k[]][]kk[[][]]]`
 
 Uma forma de descrever o procedimento é: remover o primeiro elemento completamente, esse removido daremos o nome de principal e o elemento principal anterior é o resíduo. então linkamos o residuo no começo do elemento principal atual.
-Mais para frente teremos outra maneira de descrever enter usando linkagem e remoção.
-el(el(i)) = i
-el^-1(i) = el(i)
+Mais para frente teremos outra maneira de descrever hold usando linkagem e remoção.
+hl(hl(i)) = i
+el^-1(i) = hl(i)
 
-Como a função não altera o molho temos que dado el(i) = j; i ≡ j
+Como a função não altera o molho temos que dado hl(i) = j; i ≡ j
 as funções númericas de 1.2. a 1.7. continuam ocm o mesmo valor, F(i) e D(i) podem mudar ao aplicar e.
 
-### 4. er(i): Enter (right)
+### 4. hr(i): Hold Right
 
-A função er(i) retorna uma imagem no qual o último elemento do elemento principal se torna o elemento principal. Os outros elementos ficam a esquerda.
-Fisicamente enter é o mesmo que segurar outro elo ou chave. nesse caso especificamente o último, mais a direita.
+A função hr(i) retorna uma imagem no qual o último elemento do elemento principal se torna o elemento principal. Os outros elementos ficam a esquerda.
+Fisicamente hold é o mesmo que segurar outro elo ou chave. nesse caso especificamente o último, mais a direita.
 aqui o residuo é colocado a direita dos outros elementos.
-as propriedades de enter se aplicam a enter right
+as propriedades de hold se aplicam a hold right
 
-- er(`[[]k]`) = `k[[]]k`
-- er(`[[]k[]k]`) = `k[[]k[]]k`
-- er(`[kk[[]]]`) = `[[][kk]]`
-- er(`[]`) = `[]`
-- er(`[[k[]k]]`) = `[k[]k[]]`
-- er(`{}`) = `{}`
-- er(`k[[][k[]k]]k`) = `[[][k[]k]k]`
-- er(`[[[]kk[[][]]]k[]]`) = `[[[]kk[[][]]]k[]]`
+- hr(`[[]k]`) = `k[[]]k`
+- hr(`[[]k[]k]`) = `k[[]k[]]k`
+- hr(`[kk[[]]]`) = `[[][kk]]`
+- hr(`[]`) = `[]`
+- hr(`[[k[]k]]`) = `[k[]k[]]`
+- hr(`{}`) = `{}`
+- hr(`k[[][k[]k]]k`) = `[[][k[]k]k]`
+- hr(`[[[]kk[[][]]]k[]]`) = `[[[]kk[[][]]]k[]]`
 
-er(i) = rr(el(rl(i)))
-er(`[kk[[]]]`) = rr(el(rl(`[kk[[]]]`)))
-er(`[kk[[]]]`) = rr(el(`[[[]]kk]`))
-er(`[kk[[]]]`) = rr(`[[kk][]]`)
-er(`[kk[[]]]`) = `[[][kk]]`
+hr(i) = rr(hl(rl(i)))
+hr(`[kk[[]]]`) = rr(hl(rl(`[kk[[]]]`)))
+hr(`[kk[[]]]`) = rr(hl(`[[[]]kk]`))
+hr(`[kk[[]]]`) = rr(`[[kk][]]`)
+hr(`[kk[[]]]`) = `[[][kk]]`
 
-rl(er(i)) = el(rr(i))
-rl(er(`[kk[[]]]`)) = el(rr(`[kk[[]]]`))
-rl(`[[][kk]]`) = el(`[[[]]kk]`)
+rl(hr(i)) = hl(rr(i))
+rl(hr(`[kk[[]]]`)) = hl(rr(`[kk[[]]]`))
+rl(`[[][kk]]`) = hl(`[[[]]kk]`)
 `[[kk][]]` = el`[[kk][]]`
 
-el(i) = rl(er(rr(i)))
+hl(i) = rl(hr(rr(i)))
 
-Função Tipo Mede/faz
+### 5. dl(m): Delete Left
+
 dl M→M deleta o elemento mais à esquerda e ficamos com o resto
+
+### 6. dr(m): Delete Right
+
 dr M→M deleta o elemento mais à direita e ficamos com o resto
+
+### 7. el(m): Extract Left
+
 xl M→M extrai o elemento mais à esquerda e ficamos com o ele
+
+### 8. er(m): Extract Right
+
 xr M→M extrai o elemento mais à direita e ficamos com o ele
+
+## Funções Combinatorias
+
+### 1. l(m,m): Link
+
 l M×M→M linka dois molhos
