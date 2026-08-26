@@ -196,7 +196,7 @@ rr(i) = rl^(F(i)-1)
 ### 3. hl(i): Hold Left
 
 A função hl(i) retorna uma imagem no qual o primeiro filho se torna o elemento principal. O elemento principal anterior com o filho removido é adicionado a esquerda no novo elemento principal.
-Fisicamente hold left é o mesmo que passar a segurar o elo ou chave mais a esquerda. 
+Fisicamente hold left é o mesmo que passar a segurar o elo ou chave mais a esquerda.
 Se o elemento principal não possui elementos abaixo, aplicar hl() é nulo e retorna a mesma imagem.
 Aplicar el ao molho vazio retorna o molho vazio
 
@@ -220,7 +220,7 @@ As funções númericas de 1.2. a 1.7. continuam com o mesmo valor, F(i) e D(i) 
 ### 4. hr(i): Hold Right
 
 A função hl(i) retorna uma imagem no qual o último filho se torna o elemento principal. O elemento principal anterior com o filho removido é adicionado a direita no novo elemento principal.
-Fisicamente hold right é o mesmo que passar a segurar o elo ou chave mais a direita. 
+Fisicamente hold right é o mesmo que passar a segurar o elo ou chave mais a direita.
 Aqui o resíduo é colocado a direita dos outros elementos.
 As propriedades de hold se aplicam a hold right
 
@@ -268,10 +268,13 @@ Como Chaves só possuem uma conexão, se uma chave é o elemento principal, o de
 
 Aplicar dl^F(i) esvazia completamente o elemento principal, qualquer dl aplicado depois retorna a mesma imagem.
 dl^(F(i)) = dl^(F(i)+n) given n>=0
+F(dl^(F(i))+n) = 0 given n>=0
 
 - dl^5(`[[[]kk[[][]]]k[]]`) = dl^3(`[[[]kk[[][]]]k[]]`) = dl(dl(dl(`[[[]kk[[][]]]k[]]`))) = dl(dl(`[k[]]`)) = dl(`[[]]`) = `[]`
 
-Se dl(i)/=`k` então dl^(F(i)+n) = `[]`
+Se dl(i)/=`k` então dl^(F(i)+n)(i) = `[]`; com n>=0
+para a função N que pode ser a função numérica F ou P, nós temos N(dl(i)) < N(i) se F(i)>0 senão N(dl(i)) = N(i). Isso é, se o elemento principal possui filhos enão o número de filhos e o número de elementos primitivos sempre diminui ao aplicar dl.
+as funções numéricas E, K, G, L, Q, D, podem diminuir ou se manter igual. depende das propriedades do elemento eliminado
 
 ### 2. dr(m): Delete Right
 
@@ -289,18 +292,49 @@ As mesmas propriedades de eelete left se aplicam ao delete right
 - dr(`[[[]kk[[][]]]k[]]`) = `[[[]kk[[][]]]k]`
 - dr^5(`[[[]kk[[][]]]k[]]`) = `[]`
 
-Usando Rotate, temos: 
+Usando Rotate, temos:
 
 dr(i) = dl(rl(i))
 dl(i) = dr(rr(i))
 
 ### 3. el(m): Extract Left
 
-xl M→M extrai o elemento mais à esquerda e ficamos com o ele
+A função Extract Left, desencaixa o filho mais a esquerda e o torna principal. É como realizar um delete left e ficar com o que foi eliminado.
+Uma definição simples para el é: el(i) = dl(hl(i)).
+Se o elemento principal não possui filhos ou é um molho vazio, a função retorna um molho vazio.
+
+- el(`[[]k]`) = `[]`
+- el(`[[]k[]k]`) = `[]`
+- el(`[kk[[]]]`) = `k`
+- el(`k`) = `{}`
+- el(`[]`) = `{}`
+- el(`{}`) = `{}`
+- el(`[[k[]k]]`) = `[k[]k]`
+- el(`k[[][k[]k]]k`) = `[[][k[]k]]`
+- el(`[[[]kk[[][]]]k[]]`) = `[[]kk[[][]]]`
+
+Em um molho de chaves finito uma Extração realizada múltiplas vezes sempre retorna o molho vazio. É certo que dado uma imagem i; el^(D(i))(i)=`{}`, porém D(i) não é o limite inferior, depende muito da estrutura da imagem do molho. Uma imagem pode ter D(i) = 1000, mas após el^2 já retornar `{}`.
+D(i) (profundidade máxima) e P(i) (elementos primitivos) sempre diminui após uma extração se F(i)>0, senão se mantém 0.
+E(el(i)) <= E(i) e K(el(i)) <= #stopped here
 
 ### 4. er(m): Extract Right
 
-xr M→M extrai o elemento mais à direita e ficamos com o ele
+A função Extract Right, desencaixa o filho mais a esquerda e o torna principal. É como realizar um delete right e ficar com o que foi eliminado.
+Uma definição simples para er é: er(i) = dr(hr(i)).
+As mesmas propriedades de Extract Left se aplicam a Extract Right.
+
+- er(`[[]k]`) = `k`
+- er(`[[]k[]k]`) = `k`
+- er(`[kk[[]]]`) = `[[]]`
+- er(`k`) = `{}`
+- er(`[]`) = `{}`
+- er(`{}`) = `{}`
+- er(`[[k[]k]]`) = `[k[]k]`
+- er(`k[[][k[]k]]k`) = `[[][k[]k]]`
+- er(`[[[]kk[[][]]]k[]]`) = `[]`
+
+Quando F(i) = 1 temos er(i) = el(i)
+Independente de como se alterna el e er, apór D(i) aplicações das funções
 
 ### 5. l(m,m): Link
 
