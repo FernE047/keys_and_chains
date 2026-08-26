@@ -11,10 +11,10 @@ Uma Imagem é uma representação visual de um Molho de chaves quando segurada e
 Utilizamos esse sistema de imagem para podermos manipular mais facilmente o molho igual fazemos fisicamente.
 Duas imagens podem ser diferentes e pertencer ao mesmo molho.
 Utilizaremos = para igualdade entre imagens logo os molhos também são iguais nesse caso.
-E utilizaremos ≡ para igualdade entre molhos. ≡/ É desigualdade entre molhos.
+E utilizaremos ≡ para igualdade entre molhos. /≡ É desigualdade entre molhos.
 A ordem no qual um elemento está dentro de um elo importa. É a ordem no qual os elementos aparecem em sentido anti-horário.
 
-- Exemplo: `[[]k[]k]` ≡ `[k[]k[]]`, enquanto `[[]k[]k]` ≡/ `[[]kk[]]`
+- Exemplo: `[[]k[]k]` ≡ `[k[]k[]]`, enquanto `[[]k[]k]` /≡ `[[]kk[]]`
 
 Cada chave e elo em um molho é denominado um Elemento Primitivo.
 Um molho sem Elementos Primitivos é um molho vazio denominado {}
@@ -246,25 +246,57 @@ rl(`[[][kk]]`) = hl(`[[[]]kk]`)
 
 hl(i) = rl(hr(rr(i)))
 
-### 5. dl(m): Delete Left
+## Funções Que Alteram Molhos
+
+As próximas funções (dl, dr, el, el, l) retornam molhos que ou fazem parte da estrutura anterior OU cria um novo molho que possui as entradas da função como parte da nova estrutura.
+
+### 1. dl(m): Delete Left
 
 A função deleta o elemento mais à esquerda dentro do elemento principal. Ficamos com o elemento Principal.
-se o elemento principal não possui elementos 
+Se o elemento principal não possui filhos ou é um molho vazio, a aplicação da função é nula e retorna a mesma imagem.
+Fisicamente delete left é o mesmo que remover o elo ou chave mais a esquerda do seu molho a partir do elo que você segura.
+Como Chaves só possuem uma conexão, se uma chave é o elemento principal, o delete left retornará somente a chave.
 
-### 6. dr(m): Delete Right
+- dl(`[[]k]`) = `[k]`
+- dl(`[[]k[]k]`) = `[k[]k]`
+- dl(`[kk[[]]]`) = `[k[[]]]`
+- dl(`[]`) = `[]`
+- dl(`[[k[]k]]`) = `[]`
+- dl(`{}`) = `{}`
+- dl(`k[[][k[]k]]k`) = `k`
+- dl(`[[[]kk[[][]]]k[]]`) = `[k[]]`
 
-dr M→M deleta o elemento mais à direita
+Aplicar dl^F(i) esvazia completamente o elemento principal, qualquer dl aplicado depois retorna a mesma imagem.
+dl^(F(i)) = dl^(F(i)+n) given n>=0
 
-### 7. el(m): Extract Left
+- dl^5(`[[[]kk[[][]]]k[]]`) = dl^3(`[[[]kk[[][]]]k[]]`) = dl(dl(dl(`[[[]kk[[][]]]k[]]`))) = dl(dl(`[k[]]`)) = dl(`[[]]`) = `[]`
+
+Se dl(i)/=`k` então dl^(F(i)+n) = `[]`
+
+### 2. dr(m): Delete Right
+
+A função deleta o elemento mais à direita dentro do elemento principal. Ficamos com o elemento Principal.
+Fisicamente delete left é o mesmo que remover o elo ou chave mais a direita do seu molho a partir do elo que você segura.
+As mesmas propriedades de eelete left se aplicam ao delete right
+
+- dl(`[[]k]`) = `[[]]`
+- dl(`[[]k[]k]`) = `[[]k[]]`
+- dl(`[kk[[]]]`) = `[kk]`
+- dl(`[]`) = `[]`
+- dl(`[[k[]k]]`) = `[]`
+- dl(`{}`) = `{}`
+- dl(`k[[][k[]k]]k`) = `k`
+- dl(`[[[]kk[[][]]]k[]]`) = `[[[]kk[[][]]]k]`
+- dl^5(`[[[]kk[[][]]]k[]]`) = `[]`
+
+### 3. el(m): Extract Left
 
 xl M→M extrai o elemento mais à esquerda e ficamos com o ele
 
-### 8. er(m): Extract Right
+### 4. er(m): Extract Right
 
 xr M→M extrai o elemento mais à direita e ficamos com o ele
 
-## Funções Combinatorias
-
-### 1. l(m,m): Link
+### 5. l(m,m): Link
 
 l M×M→M linka dois molhos
