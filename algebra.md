@@ -189,108 +189,109 @@ Outras funções que podem ser úteis e serão adicionadas no futuro:
 Funções imagéticas são imagens que alteram a imagem mantendo o molho o mesmo. Há somente duas funções imagéticas principais, outras funções imagéticas são composições das funções principais.
 Agora definimos funções que alteram a imagem mantendo o molho:
 
-### 1. r(i): Rotation
+### 1. rl(i): Rotation-left
 
-A função r(i) retorna uma imagem no qual o último elemento do elemento principal se torna o primeiro. Rotacionando a ordem dos elementos.
+A função rl(i) retorna uma imagem no qual o último elemento do elemento principal se torna o primeiro. Rotacionando a ordem dos elementos.
 Fisicamente é o mesmo que rotacionar os elementos de um elo no sentido anti-horário
-Se o elemento principal não possui elementos abaixo ou possui apenas um elemento, aplicar r é nulo e retorna a mesma imagem. Logo se o elemento principal for uma chave a aplicação de r é nula pois chaves semprre tem apenas um elemento
-Aplicar r ao molho vazio retorna o molho vazio
+Se o elemento principal não possui elementos abaixo ou possui apenas um elemento, aplicar rl é nulo e retorna a mesma imagem. Logo se o elemento principal for uma chave a aplicação de rl é nula pois chaves semprre tem apenas um elemento
+Aplicar rl ao molho vazio retorna o molho vazio
 
-- r(`[k[]k[]]`) = `[[]k[]k]`
-- r(`[kk[[]]]`) = `[[[]]kk]`
-- r(`[]`) = `[]`
-- r(`[[k[]k]]`) = `[[k[]k]]`
-- r(`{}`) = `{}`
-- r(`k[[][k[]k]]k`) = `k[[][k[]k]]k`
+- rl(`[k[]k[]]`) = `[[]k[]k]`
+- rl(`[kk[[]]]`) = `[[[]]kk]`
+- rl(`[]`) = `[]`
+- rl(`[[k[]k]]`) = `[[k[]k]]`
+- rl(`{}`) = `{}`
+- rl(`k[[][k[]k]]k`) = `k[[][k[]k]]k`
 
-Como a função não altera o molho temos que dado r(i) = j; i ≡ j
+Como a função não altera o molho temos que dado rl(i) = j; i ≡ j
 
-Dada uma função Numérica N, qualquer N descrita nos itens 1.1. a 1.8. temos N(r(i)) = N(i)
-Uma Função de uma entrada só aplicada mais de uma vez é denotada por f^n(i) com f sendo a função (r, r', e, e\*) n pode ser uma expressão entre parenteses quando necessário.
+Dada uma função Numérica N, qualquer N descrita nos itens 1.1. a 1.8. temos N(rl(i)) = N(i)
+Uma Função de uma entrada só aplicada mais de uma vez é denotada por f^n(i) com f sendo a função (rl, rr, er, el) n pode ser uma expressão entre parenteses quando necessário.
 f^0 é uma função nula.
 f^-1 desfaz a operação
 
-- r^2(`[kk[[]]]`) = r(r(`[kk[[]]]`)) = r(`[[[]]kk]`) = `[k[[]]k]` => r^2(`[kk[[]]]`) = `[k[[]]k]`
-- r^3(`[k[]k[]]`) = r(r(r(`[k[]k[]]`))) = r(r(`[[]k[]k]`)) = r(`[k[]k[]]`) = `[[]k[]k]` => r^3(`[k[]k[]]`) = `[[]k[]k]`
-- r^1(`[[]k]`) = r(`[[]k]`) = `[[]k]` => r^1(`[[]k]`) = `[[]k]`
-- r^0(`[[]k]`) = `[[]k]`
-- r^1000(`[]`) = `[]`
+- rl^2(`[kk[[]]]`) = rl(rl(`[kk[[]]]`)) = rl(`[[[]]kk]`) = `[k[[]]k]` => rl^2(`[kk[[]]]`) = `[k[[]]k]`
+- rl^3(`[k[]k[]]`) = rl(rl(rl(`[k[]k[]]`))) = rl(rl(`[[]k[]k]`)) = rl(`[k[]k[]]`) = `[[]k[]k]` => rl^3(`[k[]k[]]`) = `[[]k[]k]`
+- rl^1(`[[]k]`) = rl(`[[]k]`) = `[[]k]` => rl^1(`[[]k]`) = `[[]k]`
+- rl^0(`[[]k]`) = `[[]k]`
+- rl^1000(`[]`) = `[]`
 
-Como a rotação é algo cíclico, a cada F(i) rotações obtemos a mesma imagem que inicialmente: r^(F(i))(i) = i
-Pela mesma propriedade cíclica, r^m = r^(m mod F(i))
-r^(F(i)-1) = r^-1
+Como a rotação é algo cíclico, a cada F(i) rotações obtemos a mesma imagem que inicialmente: rl^(F(i))(i) = i
+Pela mesma propriedade cíclica, rl^m = rl^(m mod F(i))
+rl^(F(i)-1) = rl^-1
 
-Algumas imagens altamente simétricas possuem ciclos menores. defino aqui a função C(i) que retorna o menor ciclo de rotações de uma imagem maior que zero. logo r^(C(i)) = i
+Algumas imagens altamente simétricas possuem ciclos menores. defino aqui a função C(i) que retorna o menor ciclo de rotações de uma imagem maior que zero. logo rl^(C(i)) = i
 
-- C(`[k[]k[]]`) = 2, porque r^2(`[k[]k[]]`) = `[k[]k[]]`
-- C(`[k[[]k[]][]k[[]k[]][]]`) = 3, porque r(r(r(`[k[[]k[]][]k[[]k[]][]]`))) = `[k[[]k[]][]k[[]k[]][]]`
+- C(`[k[]k[]]`) = 2, porque rl^2(`[k[]k[]]`) = `[k[]k[]]`
+- C(`[k[[]k[]][]k[[]k[]][]]`) = 3, porque rl(rl(rl(`[k[[]k[]][]k[[]k[]][]]`))) = `[k[[]k[]][]k[[]k[]][]]`
 - C(`[k[]kk[][][[[]]]]`) = 7 = F(`[k[]kk[][][[[]]]]`).
 
-### 2. r'(i): Anti-Rotation
+### 2. rr(i): Anti-Rotation (rotation-right)
 
-A função r'(i) retorna uma imagem no qual o primeiro elemento do elemento principal se torna o último. Rotacionando a ordem dos elementos.
+A função rr(i) retorna uma imagem no qual o primeiro elemento do elemento principal se torna o último. Rotacionando a ordem dos elementos.
 Fisicamente é o mesmo que rotacionar os elementos de um elo no sentido horário
 Todas as propriedades de uma rotação normal se aplicam a anti-rotação.
-Como a anti-rotação age como inverso da rotação, temos a identidade r^-1 = r'
+Como a anti-rotação age como inverso da rotação, temos a identidade r^-1 = rr
 
-r(r'(i)) = i
-r'(r(i)) = i
+rl(rr(i)) = i
+rr(rl(i)) = i
 
-### 3. e(i): Enter (left)
+### 3. el(i): Enter (left)
 
-A função e(i) retorna uma imagem no qual o primeiro elemento do elemento principal se torna o elemento principal. Os outros elementos ficam a direita.
+A função el(i) retorna uma imagem no qual o primeiro elemento do elemento principal se torna o elemento principal. Os outros elementos ficam a direita.
 Fisicamente enter é o mesmo que segurar outro elo ou chave. nesse caso especificamente o primeiro, mais a esquerda.
-Se o elemento principal não possui elementos abaixo, aplicar e() é nulo e retorna a mesma imagem.
-Aplicar e ao molho vazio retorna o molho vazio
+Se o elemento principal não possui elementos abaixo, aplicar el() é nulo e retorna a mesma imagem.
+Aplicar el ao molho vazio retorna o molho vazio
 
-- e(`[[]k]`) = `[[k]]`
-- e(`[[]k[]k]`) = `[[k[]k]]`
-- e(`[kk[[]]]`) = `k[k[[]]]k`
-- e(`[]`) = `[]`
-- e(`[[k[]k]]`) = `[[]k[]k]`
-- e(`{}`) = `{}`
-- e(`k[[][k[]k]]k`) = `[k[][k[]k]]`
-- e(`[[[]kk[[][]]]k[]]`) = `[[k[]][]kk[[][]]]`
+- el(`[[]k]`) = `[[k]]`
+- el(`[[]k[]k]`) = `[[k[]k]]`
+- el(`[kk[[]]]`) = `k[k[[]]]k`
+- el(`[]`) = `[]`
+- el(`[[k[]k]]`) = `[[]k[]k]`
+- el(`{}`) = `{}`
+- el(`k[[][k[]k]]k`) = `[k[][k[]k]]`
+- el(`[[[]kk[[][]]]k[]]`) = `[[k[]][]kk[[][]]]`
 
-Uma forma de descrever o procedimento é: remover o primeiro elemento completamente, esse removido daremos o nome de principal e o elemento principal anterior é o residuo. então linkamos o residuo no começo do elemento principal atual.
+Uma forma de descrever o procedimento é: remover o primeiro elemento completamente, esse removido daremos o nome de principal e o elemento principal anterior é o resíduo. então linkamos o residuo no começo do elemento principal atual.
 Mais para frente teremos outra maneira de descrever enter usando linkagem e remoção.
-e(e(i)) = i
-e^-1(i) = e(i)
+el(el(i)) = i
+el^-1(i) = el(i)
 
-Como a função não altera o molho temos que dado r(i) = j; i ≡ j
+Como a função não altera o molho temos que dado el(i) = j; i ≡ j
 as funções númericas de 1.2. a 1.7. continuam ocm o mesmo valor, F(i) e D(i) podem mudar ao aplicar e.
 
-### 4. e*(i): Enter* (right)
+### 4. er(i): Enter (right)
 
-A função e8(i) retorna uma imagem no qual o último elemento do elemento principal se torna o elemento principal. Os outros elementos ficam a esquerda.
-Fisicamente enter* é o mesmo que segurar outro elo ou chave. nesse caso especificamente o último, mais a direita.
+A função er(i) retorna uma imagem no qual o último elemento do elemento principal se torna o elemento principal. Os outros elementos ficam a esquerda.
+Fisicamente enter é o mesmo que segurar outro elo ou chave. nesse caso especificamente o último, mais a direita.
 aqui o residuo é colocado a direita dos outros elementos.
-as propriedades de enter se aplicam a enter*
+as propriedades de enter se aplicam a enter right
 
-- e*(`[[]k]`) = `k[[]]k`
-- e*(`[[]k[]k]`) = `k[[]k[]]k`
-- e*(`[kk[[]]]`) = `[[][kk]]`
-- e*(`[]`) = `[]`
-- e*(`[[k[]k]]`) = `[k[]k[]]`
-- e*(`{}`) = `{}`
-- e*(`k[[][k[]k]]k`) = `[[][k[]k]k]`
-- e*(`[[[]kk[[][]]]k[]]`) = `[[[]kk[[][]]]k[]]`
+- er(`[[]k]`) = `k[[]]k`
+- er(`[[]k[]k]`) = `k[[]k[]]k`
+- er(`[kk[[]]]`) = `[[][kk]]`
+- er(`[]`) = `[]`
+- er(`[[k[]k]]`) = `[k[]k[]]`
+- er(`{}`) = `{}`
+- er(`k[[][k[]k]]k`) = `[[][k[]k]k]`
+- er(`[[[]kk[[][]]]k[]]`) = `[[[]kk[[][]]]k[]]`
 
-e*(i) = r'(e(r(i)))
-e*(`[kk[[]]]`) = r'(e(r(`[kk[[]]]`)))
-e*(`[kk[[]]]`) = r'(e(`[[[]]kk]`))
-e*(`[kk[[]]]`) = r'(`[[kk][]]`)
-e*(`[kk[[]]]`) = `[[][kk]]`
+er(i) = rr(el(rl(i)))
+er(`[kk[[]]]`) = rr(el(rl(`[kk[[]]]`)))
+er(`[kk[[]]]`) = rr(el(`[[[]]kk]`))
+er(`[kk[[]]]`) = rr(`[[kk][]]`)
+er(`[kk[[]]]`) = `[[][kk]]`
 
-r(e*(i)) = e(r(i))
-r(e*(`[kk[[]]]`)) = e(r(`[kk[[]]]`))
-r(`[[][kk]]`) = e(`[[[]]kk]`)
-`[[kk][]]` = e`[[kk][]]`
+rl(er(i)) = el(rr(i))
+rl(er(`[kk[[]]]`)) = el(rr(`[kk[[]]]`))
+rl(`[[][kk]]`) = el(`[[[]]kk]`)
+`[[kk][]]` = el`[[kk][]]`
 
-e(i) = r(e*(r'(i)))
-
+el(i) = rl(er(rr(i)))
 
 Função Tipo Mede/faz
-x M→M extrai o elemento mais à direita, ficamos com o resto
-x* M→M extrai o elemento mais à direita e ficamos com ele
+dl M→M deleta o elemento mais à esquerda e ficamos com o resto
+dr M→M deleta o elemento mais à direita e ficamos com o resto
+xl M→M extrai o elemento mais à esquerda e ficamos com o ele
+xr M→M extrai o elemento mais à direita e ficamos com o ele
 l M×M→M linka dois molhos
