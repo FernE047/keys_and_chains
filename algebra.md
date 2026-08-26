@@ -279,15 +279,20 @@ A função deleta o elemento mais à direita dentro do elemento principal. Ficam
 Fisicamente delete left é o mesmo que remover o elo ou chave mais a direita do seu molho a partir do elo que você segura.
 As mesmas propriedades de eelete left se aplicam ao delete right
 
-- dl(`[[]k]`) = `[[]]`
-- dl(`[[]k[]k]`) = `[[]k[]]`
-- dl(`[kk[[]]]`) = `[kk]`
-- dl(`[]`) = `[]`
-- dl(`[[k[]k]]`) = `[]`
-- dl(`{}`) = `{}`
-- dl(`k[[][k[]k]]k`) = `k`
-- dl(`[[[]kk[[][]]]k[]]`) = `[[[]kk[[][]]]k]`
-- dl^5(`[[[]kk[[][]]]k[]]`) = `[]`
+- dr(`[[]k]`) = `[[]]`
+- dr(`[[]k[]k]`) = `[[]k[]]`
+- dr(`[kk[[]]]`) = `[kk]`
+- dr(`[]`) = `[]`
+- dr(`[[k[]k]]`) = `[]`
+- dr(`{}`) = `{}`
+- dr(`k[[][k[]k]]k`) = `k`
+- dr(`[[[]kk[[][]]]k[]]`) = `[[[]kk[[][]]]k]`
+- dr^5(`[[[]kk[[][]]]k[]]`) = `[]`
+
+Usando Rotate, temos: 
+
+dr(i) = dl(rl(i))
+dl(i) = dr(rr(i))
 
 ### 3. el(m): Extract Left
 
