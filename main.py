@@ -32,9 +32,9 @@ class Chain:
             raise NotImplementedError("only comparable with chains")
         return self.unique_str() == other.unique_str()
 
-    def unique_str(self) -> tuple[str,int]:
+    def unique_str(self) -> str:
         if self.unique_string != "":
-            return self.unique_string, 0
+            return self.unique_string
         visualizations: set[str] = {str(self)}
         stack: deque[Chain] = deque([self])
         while stack:
@@ -58,7 +58,7 @@ class Chain:
                 stack.append(rotate_chain)
         vis_sort = sorted(visualizations, reverse=True)
         self.unique_string = vis_sort[0]
-        return self.unique_string, len(visualizations)
+        return self.unique_string
 
     def __hash__(self) -> int:
         return hash(self.unique_str())
@@ -118,32 +118,29 @@ def main() -> None:
             for index in range(1, len(chain_str)):
                 sub_chain = convert(f"{chain_str[:index]}[]{chain_str[index:]}")
                 initial_chains.add(sub_chain)
-        for chain in initial_chains:
-            chain.unique_string = ""
-            print(f"{chain}:{chain.unique_str()[1]}")
         previous_chains = initial_chains
         if level < start_level - 1:
             continue
-        #total = {l: 0 for l in range(11)}
-        #total[0] = len(initial_chains)
-        #begin_total = time.time()
-        #with ProcessPoolExecutor() as pool:
-        #    futures = {
-        #        pool.submit(process_chain, chain): chain for chain in initial_chains
-        #    }
-        #    for n, future in enumerate(as_completed(futures), start=1):
-        #        chain, new_total, elapsed = future.result()
-        #        for key, value in new_total.items():
-        #            total[key] += value
-        #        print(
-        #            f"⏱️ {elapsed:.2f}s | "
-        #            f"🔗 {n}/{len(initial_chains)} | "
-        #            f"🧬 {chain} | "
-        #            f"✨ {new_total}"
-        #        )
-        #print(f"\n🌸 TOTAL: {time.time() - begin_total:.2f}s")
-        #for key, value in total.items():
-        #    print(f"{key} : {value}")
+        total = {l: 0 for l in range(11)}
+        total[0] = len(initial_chains)
+        begin_total = time.time()
+        with ProcessPoolExecutor() as pool:
+            futures = {
+                pool.submit(process_chain, chain): chain for chain in initial_chains
+            }
+            for n, future in enumerate(as_completed(futures), start=1):
+                chain, new_total, elapsed = future.result()
+                for key, value in new_total.items():
+                    total[key] += value
+                print(
+                    f"⏱️ {elapsed:.2f}s | "
+                    f"🔗 {n}/{len(initial_chains)} | "
+                    f"🧬 {chain} | "
+                    f"✨ {new_total}"
+                )
+        print(f"\n🌸 TOTAL: {time.time() - begin_total:.2f}s")
+        for key, value in total.items():
+            print(f"{key} : {value}")
         if level >= end_level:
             break
 
