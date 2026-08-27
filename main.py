@@ -1,5 +1,6 @@
 import time
 from collections import deque
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 
 class Chain:
@@ -58,10 +59,12 @@ class Chain:
         vis_sort = sorted(visualizations, reverse=True)
         self.unique_string = vis_sort[0]
         return self.unique_string
+
     def __hash__(self) -> int:
         return hash(self.unique_str())
 
-def convert(text:str) -> Chain:
+
+def convert(text: str) -> Chain:
     chain_stack: list[Chain] = [Chain()]
     for char in text[1:]:
         if char == "[":
@@ -77,29 +80,33 @@ def convert(text:str) -> Chain:
     return chain_stack[0]
 
 
-def explore_keys(initial_chains: set[Chain]) -> None:
-    begin = time.time()
-    previous_chains: set[Chain] = initial_chains
+def explore_keys(initial_chain: Chain) -> dict[int, int]:
+    previous_chains: set[Chain] = {initial_chain}
+    total = {l: 0 for l in range(11)}
     for level in range(10):
-        print(f"## KEY {level + 1}\n")
         all_chains: set[Chain] = set()
         for chain in previous_chains:
             chain_str = str(chain)
-            for index in range(1,len(chain_str)):
-                sub_chain = convert(
-                    f"{chain_str[:index]}K{chain_str[index:]}"
-                )
+            for index in range(1, len(chain_str)):
+                sub_chain = convert(f"{chain_str[:index]}K{chain_str[index:]}")
                 all_chains.add(sub_chain)
-        print(f"{level + 1} : {len(all_chains)}")
+        total[level + 1] = len(all_chains)
         previous_chains = all_chains
-        if len(previous_chains) >= 500000:
-            return
-    print(time.time() - begin)
+        if len(previous_chains) >= 100000:
+            print(f"there wasn't enough on this level {level + 1}")
+            return total
+    return total
+
+
+def process_chain(chain: Chain) -> tuple[Chain, dict[int, int], float]:
+    begin = time.time()
+    new_total = explore_keys(chain)
+    return chain, new_total, time.time() - begin
 
 
 def main() -> None:
     start_level = 1
-    end_level = 5
+    end_level = 10
     previous_chains: set[Chain] = set()
     for level in range(end_level):
         print(f"\n## CHAINS {level + 1}\n")
@@ -108,18 +115,35 @@ def main() -> None:
             initial_chains.add(convert("[]"))
         for chain in previous_chains:
             chain_str = str(chain)
-            for index in range(1,len(chain_str)):
-                sub_chain = convert(
-                    f"{chain_str[:index]}[]{chain_str[index:]}"
-                )
+            for index in range(1, len(chain_str)):
+                sub_chain = convert(f"{chain_str[:index]}[]{chain_str[index:]}")
                 initial_chains.add(sub_chain)
         previous_chains = initial_chains
         if level < start_level - 1:
             continue
-        explore_keys(initial_chains)
+        total = {l: 0 for l in range(11)}
+        total[0] = len(initial_chains)
+        begin_total = time.time()
+        with ProcessPoolExecutor() as pool:
+            futures = {
+                pool.submit(process_chain, chain): chain for chain in initial_chains
+            }
+            for n, future in enumerate(as_completed(futures), start=1):
+                chain, new_total, elapsed = future.result()
+                for key, value in new_total.items():
+                    total[key] += value
+                print(
+                    f"⏱️ {elapsed:.2f}s | "
+                    f"🔗 {n}/{len(initial_chains)} | "
+                    f"🧬 {chain} | "
+                    f"✨ {new_total}"
+                )
+        print(f"\n🌸 TOTAL: {time.time() - begin_total:.2f}s")
+        for key, value in total.items():
+            print(f"{key} : {value}")
         if level >= end_level:
             break
 
+
 if __name__ == "__main__":
-    import cProfile
-    cProfile.run("main()")
+    main()
